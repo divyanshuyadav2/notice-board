@@ -1,0 +1,19 @@
+.dataTables_wrapper {
+    color: #e5e7eb;
+}
+
+.dataTables_paginate a {
+    color: #9ca3af !important;
+}
+
+.dataTables_paginate .current {
+    background: #2563eb !important;
+    color: #fff !important;
+}
+
+.dataTables_length select,
+.dataTables_filter input {
+    background: #0B2A3C;
+    color: #fff;
+    border: 1px solid #123C55;
+}

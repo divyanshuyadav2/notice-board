@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+.card {
+    @apply bg-[#0B2A3C] border border-[#123C55]
+           rounded-xl p-5;
+}
+
+.card-title {
+    @apply text-white font-semibold mb-4;
+}
+
+.label {
+    @apply block text-sm text-gray-400 mb-1;
+}
+
+.input {
+    @apply w-full rounded-lg bg-[#021420]
+           border border-[#123C55]
+           px-3 py-2 text-sm
+           focus:outline-none focus:ring-1 focus:ring-cyan-400;
+}
+
+.btn-primary {
+    @apply px-5 py-2 rounded-lg bg-blue-600
+           text-white font-semibold
+           hover:bg-blue-700;
+}
+
+.btn-secondary {
+    @apply px-5 py-2 rounded-lg bg-[#123C55]
+           text-gray-200 hover:bg-[#1a4d6a];
+}
+
+.mode-btn {
+    @apply px-4 py-2 rounded-lg
+           bg-[#0B2A3C] border border-[#123C55]
+           text-cyan-300 text-sm;
+}
+
+.mode-active {
+    @apply bg-blue-600 text-white;
+}
+/* ================= CKEDITOR DARK THEME ================= */
+
+.ck-editor__editable {
+    min-height: 300px;   /* increase height */
+    color: #000000;      /* text color black */
+    background-color: #ffffff;
+}
+/*
+.ck.ck-editor__main > .ck-editor__editable {
+    border-radius: 0.75rem;
+    border: 1px solid #123C55;
+}
+
+.ck.ck-toolbar {
+    background-color: #0B2A3C !important;
+    border: 1px solid #123C55 !important;
+}
+
+.ck.ck-toolbar .ck-button {
+    color: #e5e7eb !important;
+}
+
+.ck.ck-toolbar .ck-button:hover {
+    background-color: #123C55 !important;
+}
+
+.ck.ck-toolbar .ck-button.ck-on {
+    background-color: #2563eb !important;
+}
+
+.ck.ck-dropdown__panel {
+    background-color: #0B2A3C !important;
+    border-color: #123C55 !important;
+}
+
+.ck.ck-list__item .ck-button {
+    color: #e5e7eb !important;
+}
+
+.ck.ck-list__item .ck-button:hover {
+    background-color: #123C55 !important;
+} */
