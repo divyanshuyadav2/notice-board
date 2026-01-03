@@ -16,7 +16,7 @@
 @endif
 
 @if (session('error'))
-    <div class="bg-red-600 text-white p-4 rounded mb-6 alert-dismissible">
+    <div class="bg-red-600 text-white p-4 rounded mb-6 alert-dismissible" i>
         {{ session('error') }}
     </div>
 @endif
@@ -39,52 +39,39 @@
     </div>
 
  {{-- FORM --}}
-    <form method="POST" action="{{ route('notices.store') }}"  enctype="multipart/form-data" class="space-y-6">
+    <form method="POST" action="{{ route('notices.store') }}"  enctype="multipart/form-data" class="space-y-6" id="create-notice-form">
         @csrf
-               <div>
-    <label class="card-title">Document Type</label>
+               <div class="mt-6 card">
+      <h3 class="card-title">Document Type</h3>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {{-- NOTICE --}}
-        <label class="doc-card">
+
+        <!-- NOTICE -->
+        <label class="flex items-center gap-3 bg-[#0b2436] border border-[#1f425a] rounded-lg px-4 py-3 cursor-pointer hover:border-blue-400 transition">
             <input
                 type="radio"
                 name="document_type"
                 value="notice"
                 checked
-                class="hidden peer"
-            >
-
-            <div class="doc-card-inner notice-theme">
-                <div class="doc-card-header">
-                    <span class="doc-title">NOTICE</span>
-                    <span class="check-icon">✓</span>
-                </div>
-
-               
-            </div>
+                class="accent-blue-500"
+            />
+            <span class="text-gray-200 font-medium">Notice</span>
         </label>
 
-        {{-- CIRCULAR --}}
-        <label class="doc-card">
+        <!-- CIRCULAR -->
+        <label class="flex items-center gap-3 bg-[#0b2436] border border-[#1f425a] rounded-lg px-4 py-3 cursor-pointer hover:border-green-400 transition">
             <input
                 type="radio"
                 name="document_type"
                 value="circular"
-                class="hidden peer"
-            >
-
-            <div class="doc-card-inner circular-theme">
-                <div class="doc-card-header">
-                    <span class="doc-title">CIRCULAR</span>
-                    <span class="check-icon">✓</span>
-                </div>
-
-             
-            </div>
+                class="accent-green-500"
+            />
+            <span class="text-gray-200 font-medium">Circular</span>
         </label>
+
     </div>
 </div>
+
 
 
         {{-- IMPORTANT HIDDEN FIELDS --}}
@@ -96,13 +83,20 @@
             <h3 class="card-title">Notice Details</h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
+                <div class="hidden">
                     <label class="label">Organization Name</label>
-                    <input type="text" name="organization_name" class="input" required>
+                    <input type="text" name="organization_name" class="input" value="D S Computer Center">
                 </div>
                  <div>
                     <label class="label">Department</label>
-                    <input type="text" name="department" class="input">
+                     <select name="department" class="input">
+                        <option value="">Select Department</option>
+                        <option value="Administration" {{ old('department')=='Administration'?'selected':'' }}>Administration</option>
+                        <option value="Accounts" {{ old('department')=='Accounts'?'selected':'' }}>Accounts</option>
+                        <option value="HR" {{ old('department')=='HR'?'selected':'' }}>HR</option>
+                        <option value="IT" {{ old('department')=='IT'?'selected':'' }}>IT</option>
+                        <option value="Operations" {{ old('department')=='Operations'?'selected':'' }}>Operations</option>
+                    </select>
                 </div>
                 <div>
                     <label class="label">Subject</label>
@@ -134,7 +128,7 @@
                 <input type="file"
                        name="attachment"
                        accept="application/pdf"
-                       class="input">
+                       class="input" id="attachmentInput">
             </div>
         </div>
 
@@ -145,7 +139,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="label">Signature Image</label>
-                    <input type="file" name="signature_image" accept="image/*" class="input">
+                    <input type="file" name="signature_image" id="signatureInput" accept="image/png,image/jpeg,image/jpg" class="input">
                 </div>
 
                 <div>
@@ -165,7 +159,7 @@
 
         {{-- ACTIONS --}}
         <div class="flex justify-end gap-3">
-            <button type="button" class="btn-secondary" id="saveDraftBtn">
+            <button type="submit"  class="btn-secondary" id="saveDraftBtn">
                 Save Draft
             </button>
 
@@ -255,7 +249,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('CKEditor not loaded');
     }
 
-    /* ================= ELEMENT REFERENCES ================= */
     const draftBtn = document.getElementById('draftBtn');
     const attachBtn = document.getElementById('attachBtn');
     const draftMode = document.getElementById('draftMode');
@@ -264,48 +257,100 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusInput = document.getElementById('statusInput');
     const saveDraftBtn = document.getElementById('saveDraftBtn');
     const signatorySection = document.getElementById('signatorySection');
-    const form = document.querySelector('form');
-
+   const form = document.getElementById('create-notice-form');
     if (!form) return;
 
+    const attachmentInput = document.getElementById('attachmentInput');
+    const signatureInput = document.getElementById('signatureInput');
+    const subjectInput = document.querySelector('input[name="subject"]');
+    const noticeDateInput = document.querySelector('input[name="notice_date"]');
+
+   
+
     /* ================= MODE TOGGLE ================= */
-    if (draftBtn && attachBtn) {
-        draftBtn.addEventListener('click', () => {
-            modeInput.value = 'draft';
+    draftBtn?.addEventListener('click', () => {
+        modeInput.value = 'draft';
+        draftBtn.classList.add('mode-active');
+        attachBtn.classList.remove('mode-active');
+        draftMode.classList.remove('hidden');
+        attachMode.classList.add('hidden');
+        signatorySection?.classList.remove('hidden');
+    });
 
-            draftBtn.classList.add('mode-active');
-            attachBtn.classList.remove('mode-active');
+    attachBtn?.addEventListener('click', () => {
+        modeInput.value = 'attachment';
+        attachBtn.classList.add('mode-active');
+        draftBtn.classList.remove('mode-active');
+        attachMode.classList.remove('hidden');
+        draftMode.classList.add('hidden');
+        signatorySection?.classList.add('hidden');
+    });
 
-            draftMode.classList.remove('hidden');
-            attachMode.classList.add('hidden');
+   
+    form.addEventListener('submit', function (e) {
+        e.preventDefault(); // VERY IMPORTANT
 
-            if (signatorySection) signatorySection.classList.remove('hidden');
-        });
+        toastr.clear();
 
-        attachBtn.addEventListener('click', () => {
-            modeInput.value = 'attachment';
+        statusInput.value = 'draft';
 
-            attachBtn.classList.add('mode-active');
-            draftBtn.classList.remove('mode-active');
+        // ===== BASIC VALIDATION =====
+        if (!subjectInput?.value.trim()) {
+            toastr.error('Subject is required');
+            return;
+        }
 
-            attachMode.classList.remove('hidden');
-            draftMode.classList.add('hidden');
+        if (!noticeDateInput?.value) {
+            toastr.error('Notice date is required');
+            return;
+        }
 
-            if (signatorySection) signatorySection.classList.add('hidden');
-        });
-    }
+        const mode = modeInput.value;
 
-    /* ================= SAVE AS DRAFT ================= */
-    if (saveDraftBtn) {
-        saveDraftBtn.addEventListener('click', function () {
-            statusInput.value = 'draft';
+        // ===== ATTACHMENT VALIDATION =====
+        if (mode === 'attachment') {
+            if (!attachmentInput || attachmentInput.files.length === 0) {
+                toastr.error('Please upload a PDF file');
+                return;
+            }
 
-            // Prevent double submit
-            saveDraftBtn.disabled = true;
+            const pdf = attachmentInput.files[0];
 
-            form.submit();
-        });
-    }
+            if (pdf.type !== 'application/pdf') {
+                toastr.error('Only PDF files are allowed');
+                return;
+            }
+
+            if (pdf.size > 5 * 1024 * 1024) {
+                toastr.error('PDF must be less than 5MB');
+                return;
+            }
+        }
+
+        // ===== SIGNATURE IMAGE VALIDATION =====
+        if (signatureInput && signatureInput.files.length > 0) {
+            const img = signatureInput.files[0];
+
+            if (!img.type.startsWith('image/')) {
+                toastr.error('Signature must be an image file');
+                return;
+            }
+
+            if (img.size > 2 * 1024 * 1024) {
+                toastr.error('Signature image must be less than 2MB');
+                return;
+            }
+        }
+
+        // Prevent double submit
+        const btn = document.getElementById('saveDraftBtn');
+        btn.disabled = true;
+
+        // ✅ SAFE SUBMIT
+        form.submit();
+    });
+
+
 
 });
 </script>

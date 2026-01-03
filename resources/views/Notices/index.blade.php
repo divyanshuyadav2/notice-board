@@ -17,9 +17,7 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
             <h2 class="text-2xl font-semibold text-white">Notices/Circular</h2>
-            <p class="text-sm text-gray-400">
-                Manage all published and draft notices and circulars here.
-            </p>
+          
         </div>
 
         {{-- ADD BUTTON --}}
@@ -50,11 +48,11 @@
             <table id="noticesTable" class="w-full text-sm stripe hover">
                 <thead class="bg-[#0B2A3C] text-cyan-300 uppercase text-xs">
                     <tr>
-                        <th class="px-4 py-3">#</th>
-                        <th class="px-4 py-3">Notice</th>
-                        <th class="px-4 py-3">Organization</th>
+                        
+                        <th class="px-4 py-3">Description</th>
+                        <th class="px-4 py-3">Authorised Person</th>
                         <th class="px-4 py-3">Type</th>
-                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3">Effective Date /Published Date</th>
                         <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -372,12 +370,7 @@ $(document).ready(function () {
         },
 
       columns: [
-                {
-                    data: 'DT_RowIndex',
-                    name: 'DT_RowIndex',
-                    orderable: false,
-                    searchable: false
-                },
+              
 
                 {
                     data: 'title',                 
@@ -387,7 +380,7 @@ $(document).ready(function () {
                 },
 
                 {
-                    data: 'Orga_Name',             
+                    data: 'Athr_Pers_Name',             
                     searchable: true
                 },
 
@@ -449,10 +442,9 @@ $(document).ready(function () {
                     <label>
                         <span>Show</span>
                         <select id="customLength">
-                            <option value="10">10</option>
-                            <option value="25" selected>25</option>
-                            <option value="50">50</option>
+                            <option value="50" selected>50</option>
                             <option value="100" >100</option>
+                             <option value="200" >200</option>
                         </select>
                     </label>
                 </div>
@@ -551,6 +543,24 @@ $(document).ready(function () {
     setTimeout(() => {
         $('#successAlert').fadeOut();
     }, 2000);
+});
+document.addEventListener('click', function (e) {
+
+    // Close all dropdowns first
+    document.querySelectorAll('.action-menu').forEach(menu => {
+        menu.classList.add('hidden');
+    });
+
+    // Toggle clicked one
+    const btn = e.target.closest('.action-btn');
+    if (btn) {
+        e.preventDefault();
+
+        const wrapper = btn.closest('div');
+        const menu = wrapper.querySelector('.action-menu');
+
+        menu.classList.toggle('hidden');
+    }
 });
 </script>
 @endpush
