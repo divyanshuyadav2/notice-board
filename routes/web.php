@@ -22,3 +22,5 @@ Route::get('/notices/{notice}/edit', [NoticeController::class, 'edit'])
 
 Route::post('/notices/{notice}/status', [NoticeController::class, 'updateStatus'])
     ->name('notices.updateStatus');
+Route::put('/notices/{notice}', [NoticeController::class, 'update'])
+    ->name('notices.update');

@@ -316,6 +316,87 @@ class NoticeController extends Controller
                 : 'Document moved back to draft'
         ]);
     }
+// update function
+
+public function update(Request $request, $uin)
+{
+    try {
+        $notice = AdmnTranNticCrcl::where('Ntic_Crcl_UIN', $uin)->firstOrFail();
+
+        /* ================= VALIDATION ================= */
+        $request->validate([
+            'document_type'           => 'required|in:notice,circular',
+            'subject'                 => 'required|string|max:255',
+            'notice_date'             => 'required|date',
+            'effective_date'          => 'nullable|date',
+            'department'              => 'nullable|string|max:100',
+            'authorized_person_name'  => 'nullable|string|max:255',
+            'designation'             => 'nullable|string|max:255',
+            'attachment'              => 'nullable|file|mimes:pdf|max:5120',
+            'signature_image'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        /* ================= BASIC FIELDS ================= */
+        $notice->Docu_Type       = $request->document_type;
+        $notice->Subj            = $request->subject;
+        $notice->Dept            = $request->department;
+        $notice->Ntic_Crcl_Dt    = \Carbon\Carbon::parse($request->notice_date);
+        $notice->Eft_Dt          = $request->effective_date
+                                    ? \Carbon\Carbon::parse($request->effective_date)
+                                    : null;
+        $notice->Athr_Pers_Name  = $request->authorized_person_name;
+        $notice->Dsig            = $request->designation;
+        $notice->Mode            = $request->mode ?? 'draft';
+        $notice->Stau            = $request->status ?? 'draft';
+
+        /* ================= CONTENT / ATTACHMENT ================= */
+        if ($request->mode === 'attachment') {
+
+            if ($request->hasFile('attachment')) {
+
+                // delete old attachment if exists
+                if ($notice->Attch_Path && Storage::disk('public')->exists($notice->Attch_Path)) {
+                    Storage::disk('public')->delete($notice->Attch_Path);
+                }
+
+                $notice->Attch_Path = $request->file('attachment')
+                    ->store('notices/attachments', 'public');
+            }
+
+            $notice->Cntn = null;
+
+        } else {
+            // Draft/Text mode
+            $notice->Cntn = $request->content;
+        }
+
+        /* ================= SIGNATURE IMAGE ================= */
+        if ($request->hasFile('signature_image')) {
+
+            if ($notice->Sign_Path && Storage::disk('public')->exists($notice->Sign_Path)) {
+                Storage::disk('public')->delete($notice->Sign_Path);
+            }
+
+            $notice->Sign_Path = $request->file('signature_image')
+                ->store('notices/signatures', 'public');
+        }
+
+        /* ================= SAVE ================= */
+        $notice->save();
+
+        return redirect()
+            ->route('notices.index')
+            ->with('success', 'Notice updated successfully.');
+
+    } catch (\Exception $e) {
+
+        
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Something went wrong while updating the notice.');
+    }
+}
 
 
 

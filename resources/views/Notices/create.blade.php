@@ -203,10 +203,13 @@ document.addEventListener('DOMContentLoaded', function () {
             fontFamily: {
                 options: [
                     'default',
+                    'Arial Black, Gadget, sans-serif',
                     'Arial, Helvetica, sans-serif',
                     'Times New Roman, Times, serif',
                     'Georgia, serif',
-                    'Courier New, Courier, monospace'
+                    'Courier New, Courier, monospace',
+                    'Noto Sans Devanagari, sans-serif',
+                    'Kruti Dev 010, serif'
                 ],
                 supportAllValues: true
             },
