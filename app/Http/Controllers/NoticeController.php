@@ -209,6 +209,14 @@ class NoticeController extends Controller
                     'authorized_person_name'=> 'nullable|string|max:255',
                     'designation'           => 'nullable|string|max:255',
                 ];
+                                // Normalize reference number (remove spaces & trim)
+                if ($request->filled('ref_no')) {
+                    $normalizedRef = preg_replace('/\s+/', '', $request->ref_no);
+                    $request->merge([
+                        'ref_no' => $normalizedRef
+                    ]);
+                }
+
                 if ($request->filled('ref_no')) {
 
                     $exists = AdmnTranNticCrcl::where('Ref_No', $request->ref_no)->exists();
