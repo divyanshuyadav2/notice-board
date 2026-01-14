@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\AdmnTranNticCrcl;
+use Illuminate\Support\Str;
 
 class NoticeController extends Controller
 {
@@ -189,259 +190,291 @@ class NoticeController extends Controller
       
         try {
 
-   //     dd($request);
-            /* ================= VALIDATION ================= */
+    //     dd($request);
+                /* ================= VALIDATION ================= */
 
-            $rules = [
-                'action_type'           => 'required|in:notice_issued,notice_received,circular_issued,circular_received',
-                'notice_date'           => 'required|date',
-                'subject'               => 'required|string|max:255',
-                'effective_date'        => 'nullable|date',
-                'ref_no'                =>'required|string|max:255|',
-                'mode'                  => 'required|in:draft,attachment',
-                'status'                => 'required|in:draft,published',
+                $rules = [
+                    'action_type'           => 'required|in:notice_issued,notice_received,circular_issued,circular_received',
+                    'notice_date'           => 'required|date',
+                    'subject'               => 'required|string|max:255',
+                    'effective_date'        => 'nullable|date',
+                    'ref_no'                =>'required|string|max:255|',
+                    'mode'                  => 'required|in:draft,attachment',
+                    'status'                => 'required|in:draft,published',
 
-                'document_type'         => 'required|in:notice,circular',
-                'department'            => 'nullable|string|max:255',
+                    'document_type'         => 'required|in:notice,circular',
+                    'department'            => 'nullable|string|max:255',
 
-                'signature_image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-                'authorized_person_name'=> 'nullable|string|max:255',
-                'designation'           => 'nullable|string|max:255',
+                    'signature_image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                    'authorized_person_name'=> 'nullable|string|max:255',
+                    'designation'           => 'nullable|string|max:255',
+                ];
+                if ($request->filled('ref_no')) {
+
+                    $exists = AdmnTranNticCrcl::where('Ref_No', $request->ref_no)->exists();
+
+                    if ($exists) {
+                        return redirect()
+                            ->back()
+                            ->withInput()
+                            ->withErrors([
+                                'ref_no' => 'This reference number already exists.'
+                            ]);
+                    }
+                }
+
+                // Organization required only for RECEIVED
+                if (str_contains($request->action_type, 'received')) {
+                    $rules['organization_name'] = 'required|string|max:255';
+                } else {
+                    $rules['organization_name'] = 'nullable|string|max:255';
+                }
+
+                // Reference number required only for ISSUED
+            
+                if ($request->mode === 'attachment') {
+                    $rules['attachment'] = 'required|file|mimes:pdf|max:5120';
+                } else {
+                    $rules['content'] = 'required|string';
+                }
+
+                $validated = $request->validate($rules);
+
+                /* ================= FILE UPLOADS ================= */
+
+                $attachmentPath = null;
+                if ($request->mode === 'attachment' && $request->hasFile('attachment')) {
+                    $attachmentPath = $request->file('attachment')
+                        ->store('notices/attachments', 'public');
+                }
+
+                $signaturePath = null;
+                if ($request->hasFile('signature_image')) {
+                    $signaturePath = $request->file('signature_image')
+                        ->store('notices/signatures', 'public');
+                }
+
+                /* ================= SAVE ================= */
+
+                $notice = AdmnTranNticCrcl::create([
+
+                    /* CORE */
+                    'Orga_Name'        => $validated['organization_name'] ?? null,
+                    'Ntic_Crcl_Dt'     => $validated['notice_date'],
+                    'Subj'             => $validated['subject'],
+                    'Ref_No'           => $validated['ref_no'] ?? null,
+                    'Eft_Dt'           => $validated['effective_date'] ?? null,
+
+                    /* ACTION */
+                    'Action_Type'      => $validated['action_type'],
+                    'Docu_Type'        => $validated['document_type'],
+
+                    /* CONTENT */
+                    'Cntn'             => $validated['mode'] === 'draft'
+                                            ? $validated['content']
+                                            : null,
+
+                    'Atch_Path'        => $validated['mode'] === 'attachment'
+                                            ? $attachmentPath
+                                            : null,
+
+                    'mode'             => $validated['mode'],
+                    'Stau'             => $validated['status'],
+
+                    /* SIGNATORY */
+                    'Imgs_Sgnt'        => $signaturePath,
+                    'Athr_Pers_Name'   => $validated['authorized_person_name'] ?? null,
+                    'Dsig'             => $validated['designation'] ?? null,
+                    'Dept'             => $validated['department'] ?? null,
+
+                    /* AUDIT */
+                    'CrBy'             => auth()->id() ?? 1,
+                    'CrOn'             => now(),
+
+                    'Pbli_By'          => $validated['status'] === 'published'
+                                            ? (auth()->id() ?? 1)
+                                            : null,
+
+                    'Pbli_On'          => $validated['status'] === 'published'
+                                            ? now()
+                                            : null,
+                ]);
+
+
+                return redirect()
+                    ->route('notices.index')
+                    ->with('success', 'Notice saved successfully.');
+
+            } catch (ValidationException $e) {
+
+                return redirect()
+                    ->back()
+                    ->withErrors($e->getMessage())
+                    ->withInput();
+
+            } catch (\Exception $e) {
+
+                Log::error('Notice Store Error', [
+                    'message' => $e->getMessage(),
+                ]);
+
+                return redirect()
+                    ->back()
+                    ->with('error', $e->getMessage())
+                    ->withInput();
+            }
+        }
+
+
+        public function show(AdmnTranNticCrcl $notice)
+        {
+            
+            return view('notices.show', compact('notice'));
+        }
+        public function edit(AdmnTranNticCrcl $notice){
+            return view('notices.edit', compact('notice'));
+        }
+        public function updateStatus(Request $request, AdmnTranNticCrcl $notice)
+        {
+            
+            $validated = $request->validate([
+                'status' => 'required|in:draft,published'
+            ]);
+
+            $data = [
+                'Stau'   => $validated['status'],
+                'MoBy'  => auth()->id() ?? 1,
+                'MoOn'  => now(),
             ];
-            if ($request->filled('ref_no')) {
 
-                $exists = AdmnTranNticCrcl::where('Ref_No', $request->ref_no)->exists();
-
-                if ($exists) {
-                    return redirect()
-                        ->back()
-                        ->withInput()
-                        ->withErrors([
-                            'ref_no' => 'This reference number already exists.'
-                        ]);
-                }
+            // If publishing → set published info
+            if ($validated['status'] === 'published') {
+                $data['Pbli_By'] = auth()->id() ?? 1;
+                $data['Pbli_On'] = now();
             }
 
-            // Organization required only for RECEIVED
-            if (str_contains($request->action_type, 'received')) {
-                $rules['organization_name'] = 'required|string|max:255';
-            } else {
-                $rules['organization_name'] = 'nullable|string|max:255';
-            }
+            $notice->update($data);
 
-            // Reference number required only for ISSUED
-          
-            if ($request->mode === 'attachment') {
-                $rules['attachment'] = 'required|file|mimes:pdf|max:5120';
-            } else {
-                $rules['content'] = 'required|string';
-            }
-
-            $validated = $request->validate($rules);
-
-            /* ================= FILE UPLOADS ================= */
-
-            $attachmentPath = null;
-            if ($request->mode === 'attachment' && $request->hasFile('attachment')) {
-                $attachmentPath = $request->file('attachment')
-                    ->store('notices/attachments', 'public');
-            }
-
-            $signaturePath = null;
-            if ($request->hasFile('signature_image')) {
-                $signaturePath = $request->file('signature_image')
-                    ->store('notices/signatures', 'public');
-            }
-
-            /* ================= SAVE ================= */
-
-            $notice = AdmnTranNticCrcl::create([
-
-                /* CORE */
-                'Orga_Name'        => $validated['organization_name'] ?? null,
-                'Ntic_Crcl_Dt'     => $validated['notice_date'],
-                'Subj'             => $validated['subject'],
-                'Ref_No'           => $validated['ref_no'] ?? null,
-                'Eft_Dt'           => $validated['effective_date'] ?? null,
-
-                /* ACTION */
-                'Action_Type'      => $validated['action_type'],
-                'Docu_Type'        => $validated['document_type'],
-
-                /* CONTENT */
-                'Cntn'             => $validated['mode'] === 'draft'
-                                        ? $validated['content']
-                                        : null,
-
-                'Atch_Path'        => $validated['mode'] === 'attachment'
-                                        ? $attachmentPath
-                                        : null,
-
-                'mode'             => $validated['mode'],
-                'Stau'             => $validated['status'],
-
-                /* SIGNATORY */
-                'Imgs_Sgnt'        => $signaturePath,
-                'Athr_Pers_Name'   => $validated['authorized_person_name'] ?? null,
-                'Dsig'             => $validated['designation'] ?? null,
-                'Dept'             => $validated['department'] ?? null,
-
-                /* AUDIT */
-                'CrBy'             => auth()->id() ?? 1,
-                'CrOn'             => now(),
-
-                'Pbli_By'          => $validated['status'] === 'published'
-                                        ? (auth()->id() ?? 1)
-                                        : null,
-
-                'Pbli_On'          => $validated['status'] === 'published'
-                                        ? now()
-                                        : null,
+            return response()->json([
+                'success' => true,
+                'message' => $validated['status'] === 'published'
+                    ? 'Document published successfully'
+                    : 'Document moved back to draft'
             ]);
-
-
-            return redirect()
-                ->route('notices.index')
-                ->with('success', 'Notice saved successfully.');
-
-        } catch (ValidationException $e) {
-
-            return redirect()
-                ->back()
-                ->withErrors($e->getMessage())
-                ->withInput();
-
-        } catch (\Exception $e) {
-
-            Log::error('Notice Store Error', [
-                'message' => $e->getMessage(),
-            ]);
-
-            return redirect()
-                ->back()
-                ->with('error', $e->getMessage())
-                ->withInput();
         }
-    }
+    // update function
 
-
-    public function show(AdmnTranNticCrcl $notice)
+    public function update(Request $request, $uin)
     {
+            try {
+
+        // dd($request);
+                $notice = AdmnTranNticCrcl::where('Ntic_Crcl_UIN', $uin)->firstOrFail();
+
+                /* ================= VALIDATION ================= */
+                $rules = [
+                    'document_type'          => 'required|in:notice,circular',
+                    'action_type'            => 'required|in:notice_issued,notice_received,circular_issued,circular_received',
+                    'subject'                => 'required|string|max:255',
+                    'notice_date'            => 'required|date',
+                    'effective_date'         => 'nullable|date',
+                    'department'             => 'nullable|string|max:100',
+                    
+                    'mode'                   => 'required|in:draft,attachment',
+                    'status'                 => 'required|in:draft,published',
+
+                    'signature_image'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                    'authorized_person_name' => 'nullable|string|max:255',
+                    'designation'            => 'nullable|string|max:255',
+                    'organization_name'      => 'required'
+                ];
+
+            
         
-        return view('notices.show', compact('notice'));
-    }
-    public function edit(AdmnTranNticCrcl $notice){
-         return view('notices.edit', compact('notice'));
-    }
-    public function updateStatus(Request $request, AdmnTranNticCrcl $notice)
-    {
-        
-        $validated = $request->validate([
-            'status' => 'required|in:draft,published'
-        ]);
-
-        $data = [
-            'Stau'   => $validated['status'],
-            'MoBy'  => auth()->id() ?? 1,
-            'MoOn'  => now(),
-        ];
-
-        // If publishing → set published info
-        if ($validated['status'] === 'published') {
-            $data['Pbli_By'] = auth()->id() ?? 1;
-            $data['Pbli_On'] = now();
-        }
-
-        $notice->update($data);
-
-        return response()->json([
-            'success' => true,
-            'message' => $validated['status'] === 'published'
-                ? 'Document published successfully'
-                : 'Document moved back to draft'
-        ]);
-    }
-// update function
-
-public function update(Request $request, $uin)
-{
-    try {
-        $notice = AdmnTranNticCrcl::where('Ntic_Crcl_UIN', $uin)->firstOrFail();
-
-        /* ================= VALIDATION ================= */
-        $request->validate([
-            'document_type'           => 'required|in:notice,circular',
-            'subject'                 => 'required|string|max:255',
-            'notice_date'             => 'required|date',
-            'effective_date'          => 'nullable|date',
-            'department'              => 'nullable|string|max:100',
-            'authorized_person_name'  => 'nullable|string|max:255',
-            'designation'             => 'nullable|string|max:255',
-            'attachment'              => 'nullable|file|mimes:pdf|max:5120',
-            'signature_image'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        /* ================= BASIC FIELDS ================= */
-        $notice->Docu_Type       = $request->document_type;
-        $notice->Subj            = $request->subject;
-        $notice->Dept            = $request->department;
-        $notice->Ntic_Crcl_Dt    = \Carbon\Carbon::parse($request->notice_date);
-        $notice->Eft_Dt          = $request->effective_date
-                                    ? \Carbon\Carbon::parse($request->effective_date)
-                                    : null;
-        $notice->Athr_Pers_Name  = $request->authorized_person_name;
-        $notice->Dsig            = $request->designation;
-        $notice->Mode            = $request->mode ?? 'draft';
-        $notice->Stau            = $request->status ?? 'draft';
-
-        /* ================= CONTENT / ATTACHMENT ================= */
-        if ($request->mode === 'attachment') {
-
-            if ($request->hasFile('attachment')) {
-
-                // delete old attachment if exists
-                if ($notice->Attch_Path && Storage::disk('public')->exists($notice->Attch_Path)) {
-                    Storage::disk('public')->delete($notice->Attch_Path);
+                // ISSUED → reference no required & unique (ignore self)
+            
+                // Attachment vs Draft
+                if ($request->mode === 'attachment') {
+                    $rules['attachment'] = 'nullable|file|mimes:pdf|max:5120';
+                } else {
+                    $rules['content'] = 'required|string';
                 }
 
-                $notice->Attch_Path = $request->file('attachment')
-                    ->store('notices/attachments', 'public');
+                $validated = $request->validate($rules);
+
+                /* ================= BASIC FIELDS ================= */
+                $notice->Docu_Type     = $validated['document_type'];
+                $notice->Action_Type  = $validated['action_type'];
+                $notice->Subj          = $validated['subject'];
+                $notice->Ref_No        = $request['ref_no'] ?? null;
+                $notice->Orga_Name     = $validated['organization_name'] ?? null;
+                $notice->Dept          = $validated['department'] ?? null;
+
+                $notice->Ntic_Crcl_Dt  = $validated['notice_date'];
+                $notice->Eft_Dt        = $validated['effective_date'] ?? null;
+
+                $notice->mode          = $validated['mode'];
+                $notice->Stau          = $validated['status'];
+                $notice->Athr_Pers_Name     = $validated['authorized_person_name'] ?? null;
+                $notice->Dsig =$validated['designation'] ?? null;
+                /* ================= CONTENT / ATTACHMENT ================= */
+                if ($validated['mode'] === 'attachment') {
+
+                    // remove editor content
+                    $notice->Cntn = null;
+
+                    if ($request->hasFile('attachment')) {
+
+                        // delete old attachment
+                        if ($notice->Atch_Path && Storage::disk('public')->exists($notice->Atch_Path)) {
+                            Storage::disk('public')->delete($notice->Atch_Path);
+                        }
+
+                        $filename = 'notice_' . time() . '_' . Str::random(6) . '.pdf';
+
+                        $notice->Atch_Path = $request->file('attachment')
+                            ->storeAs('notices/attachments', $filename, 'public');
+                    }
+
+                } else {
+                    // Draft mode
+                    $notice->Cntn = $validated['content'];
+                }
+
+                /* ================= SIGNATURE IMAGE ================= */
+                if ($request->hasFile('signature_image')) {
+
+                    if ($notice->Imgs_Sgnt && Storage::disk('public')->exists($notice->Imgs_Sgnt)) {
+                        Storage::disk('public')->delete($notice->Imgs_Sgnt);
+                    }
+
+                    $notice->Imgs_Sgnt = $request->file('signature_image')
+                        ->store('notices/signatures', 'public');
+                }
+
+                /* ================= AUDIT ================= */
+                $notice->MoBy = auth()->id() ?? 1;
+                $notice->MoOn = now();
+
+                $notice->save();
+
+                return redirect()
+                    ->route('notices.index')
+                    ->with('success', 'Notice updated successfully.');
+
+            } catch (\Exception $e) {
+
+                \Log::error('Notice Update Error', [
+                    'uin' => $uin,
+                    'error' => $e->getMessage()
+                ]);
+
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error',$e->getMessage());
             }
-
-            $notice->Cntn = null;
-
-        } else {
-            // Draft/Text mode
-            $notice->Cntn = $request->content;
-        }
-
-        /* ================= SIGNATURE IMAGE ================= */
-        if ($request->hasFile('signature_image')) {
-
-            if ($notice->Sign_Path && Storage::disk('public')->exists($notice->Sign_Path)) {
-                Storage::disk('public')->delete($notice->Sign_Path);
-            }
-
-            $notice->Sign_Path = $request->file('signature_image')
-                ->store('notices/signatures', 'public');
-        }
-
-        /* ================= SAVE ================= */
-        $notice->save();
-
-        return redirect()
-            ->route('notices.index')
-            ->with('success', 'Notice updated successfully.');
-
-    } catch (\Exception $e) {
-
-        
-        return redirect()
-            ->back()
-            ->withInput()
-            ->with('error', 'Something went wrong while updating the notice.');
     }
-}
   public function publish(AdmnTranNticCrcl $notice)
     {
         

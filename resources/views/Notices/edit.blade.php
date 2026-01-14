@@ -51,131 +51,153 @@
     @csrf
     @method('PUT')
 
-    {{-- DOCUMENT TYPE --}}
-    <div class="mt-6 card">
-        <h3 class="card-title">Document Type</h3>
+    {{-- READ-ONLY MODE --}}
+    <input type="hidden" name="mode" value="{{ $notice->mode }}">
+    <input type="hidden" name="status" value="{{ $notice->Stau }}">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {{-- ACTION TYPE --}}
+    <div class="card">
+        <h3 class="card-title">Action Type</h3>
 
-            <label class="flex items-center gap-3 bg-[#0b2436] border border-[#1f425a] rounded-lg px-4 py-3 cursor-pointer hover:border-blue-400">
-                <input type="radio"
-                       name="document_type"
-                       value="notice"
-                       {{ $notice->Docu_Type === 'notice' ? 'checked' : '' }}
-                       class="accent-blue-500">
-                <span class="font-medium">Notice</span>
-            </label>
-
-            <label class="flex items-center gap-3 bg-[#0b2436] border border-[#1f425a] rounded-lg px-4 py-3 cursor-pointer hover:border-green-400">
-                <input type="radio"
-                       name="document_type"
-                       value="circular"
-                       {{ $notice->Docu_Type === 'circular' ? 'checked' : '' }}
-                       class="accent-green-500">
-                <span class="font-medium">Circular</span>
-            </label>
-
-        </div>
+        <select name="action_type" id="actionType" class="input" required>
+            <option value="notice_issued" {{ $notice->Action_Type === 'notice_issued' ? 'selected' : '' }}>
+                Notice Issued
+            </option>
+            <option value="notice_received" {{ $notice->Action_Type === 'notice_received' ? 'selected' : '' }}>
+                Notice Received
+            </option>
+            <option value="circular_issued" {{ $notice->Action_Type === 'circular_issued' ? 'selected' : '' }}>
+                Circular Issued
+            </option>
+            <option value="circular_received" {{ $notice->Action_Type === 'circular_received' ? 'selected' : '' }}>
+                Circular Received
+            </option>
+        </select>
     </div>
 
-    {{-- HIDDEN --}}
-    <input type="hidden" name="mode" id="modeInput" value="{{ $notice->mode }}">
-    <input type="hidden" name="status" id="statusInput" value="{{ $notice->Stau }}">
+    {{-- ORGANIZATION (RECEIVED ONLY) --}}
+    <div class="card {{ str_contains($notice->Action_Type,'received') ? '' : 'hidden' }}"
+         id="organizationWrapper">
+        <label class="label">Organization Name</label>
+        <input type="text"
+               name="organization_name"
+               class="input"
+               value="{{ $notice->Orga_Name }}">
+    </div>
+
+    {{-- DOCUMENT TYPE --}}
+    <div class="hidden">
+        <h3 class="card-title">Document Type</h3>
+
+        <div class="">
+            <label class="doc-card">
+                <input type="radio" name="document_type" value="notice"
+                       {{ $notice->Docu_Type === 'notice' ? 'checked' : '' }}>
+                <span>Notice</span>
+            </label>
+
+            <label class="doc-card">
+                <input type="radio" name="document_type" value="circular"
+                       {{ $notice->Docu_Type === 'circular' ? 'checked' : '' }}>
+                <span>Circular</span>
+            </label>
+        </div>
+    </div>
 
     {{-- DETAILS --}}
     <div class="card">
         <h3 class="card-title">Details</h3>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <input type="hidden" name="organization_name" value="{{ $notice->Orga_Name }}">
-
-            <div>
-                <label class="label">Department</label>
-                <select name="department" class="input">
-                    @foreach (['Administration','Accounts','HR','IT','Operations'] as $dept)
-                        <option value="{{ $dept }}"
-                            {{ $notice->Dept === $dept ? 'selected' : '' }}>
-                            {{ $dept }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
             <div>
                 <label class="label">Subject</label>
                 <input type="text" name="subject" class="input"
                        value="{{ $notice->Subj }}" required>
             </div>
 
+            <div id="referenceWrapper"
+                 class="">
+                <label class="label">Reference No</label>
+                <input type="text"
+                       name="ref_no"
+                       class="input"
+                       value="{{ $notice->Ref_No }}" readonly>
+            </div>
+
             <div>
-                <label class="label">Notice Date</label>
+                <label class="label">Issued / Received Date</label>
                 <input type="date" name="notice_date" class="input"
-                       value="{{ $notice->Ntic_Crcl_Dt }}" required>
+                       value="{{ $notice->Ntic_Crcl_Dt }}" style="color: #fff; color-scheme: dark;"  required>
             </div>
 
             <div>
                 <label class="label">Effective Date</label>
                 <input type="date" name="effective_date" class="input"
-                       value="{{ $notice->Eft_Dt }}" required>
+                       value="{{ $notice->Eft_Dt }}" style="color: #fff; color-scheme: dark;" required>
+            </div>
+
+            <div>
+                <label class="label">Department</label>
+                <select name="department" class="input">
+                    @foreach (['Administration','Accounts','HR','IT','Operations'] as $dept)
+                        <option value="{{ $dept }}" {{ $notice->Dept === $dept ? 'selected' : '' }}>
+                            {{ $dept }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
         </div>
     </div>
 
     {{-- CONTENT --}}
-<div class="card">
-    <h3 class="card-title"> Content</h3>
+    <div class="card">
+        <h3 class="card-title">Content</h3>
 
-    {{-- DRAFT --}}
-    @if ($notice->mode === 'draft')
-        <div id="draftmode">
+        @if ($notice->mode === 'draft')
             <textarea id="editor" name="content">{{ $notice->Cntn }}</textarea>
-        </div>
-    @endif
-
-    {{-- ATTACHMENT --}}
-    @if ($notice->mode === 'attachment')
-        <div id="attachmode">
+        @else
             <label class="label">Replace PDF (optional)</label>
             <input type="file"
                    name="attachment"
                    accept="application/pdf"
-                   class="input"
-                   id="attachmentInput">
-        </div>
-    @endif
-</div>
-
-
-    {{-- SIGNATORY --}}
-   @if ($notice->mode === 'draft')
-<div class="card" id="signatorySection">
-    <h3 class="card-title">Authorized Signatory</h3>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input type="file" name="signature_image" id="signatureInput"
-               accept="image/png,image/jpeg,image/jpg" class="input">
-
-        <input type="text" name="authorized_person_name"
-               class="input"
-               value="{{ $notice->Athr_Pers_Name }}"
-               placeholder="Authorized Person Name">
-
-        <input type="text" name="designation"
-               class="input"
-               value="{{ $notice->Desg }}"
-               placeholder="Designation">
+                   class="input">
+        @endif
     </div>
-</div>
-@endif
 
+    {{-- SIGNATORY (DRAFT ONLY) --}}
+    @if ($notice->mode === 'draft')
+    <div class="card">
+        <h3 class="card-title">Authorized Signatory</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="file"
+                   name="signature_image"
+                   accept="image/png,image/jpeg,image/jpg"
+                   class="input">
+
+            <input type="text"
+                   name="authorized_person_name"
+                   class="input"
+                   value="{{ $notice->Athr_Pers_Name }}"
+                   placeholder="Authorized Person Name">
+
+            <input type="text"
+                   name="designation"
+                   class="input"
+                   value="{{ $notice->Dsig }}"
+                   placeholder="Designation">
+        </div>
+    </div>
+    @endif
 
     {{-- ACTIONS --}}
-    <div class="flex justify-end gap-3">
-        <button type="submit" class="btn-secondary" id="saveDraftBtn">
+    <div class="flex justify-end">
+        <button type="submit" class="btn-secondary">
             Update
         </button>
     </div>
 </form>
+
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -260,30 +282,54 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ================= ELEMENT REFERENCES ================= */
-    const form = document.getElementById('edit-notice-form');
-    const draftBtn = document.getElementById('draftBtn');
-    const attachBtn = document.getElementById('attachBtn');
-    const draftmode = document.getElementById('draftmode');
-    const attachmode = document.getElementById('attachmode');
-    const modeInput = document.getElementById('modeInput');
-    const statusInput = document.getElementById('statusInput');
-    const signatorySection = document.getElementById('signatorySection');
+    const form              = document.getElementById('edit-notice-form');
+    const actionTypeSelect  = document.getElementById('actionType');
+    const orgWrapper        = document.getElementById('organizationWrapper');
+    const refWrapper        = document.getElementById('referenceWrapper');
+    const refInput          = refWrapper?.querySelector('input');
 
-    const subjectInput = document.querySelector('input[name="subject"]');
-    const noticeDateInput = document.querySelector('input[name="notice_date"]');
-    const attachmentInput = document.getElementById('attachmentInput');
-    const signatureInput = document.getElementById('signatureInput');
-    const submitBtn = document.getElementById('saveDraftBtn');
+    const subjectInput      = document.querySelector('input[name="subject"]');
+    const noticeDateInput   = document.querySelector('input[name="notice_date"]');
+    const attachmentInput  = document.querySelector('input[name="attachment"]');
+    const signatureInput   = document.querySelector('input[name="signature_image"]');
+    const modeInput        = document.querySelector('input[name="mode"]');
+    const submitBtn        = document.querySelector('button[type="submit"]');
 
     if (!form) return;
 
-    /* ================= FORM SUBMIT + VALIDATION ================= */
+    /* ================= ACTION TYPE VISIBILITY ================= */
+    function handleActionVisibility() {
+        const action = actionTypeSelect.value;
+
+        // Organization → RECEIVED
+        if (action.includes('received')) {
+            orgWrapper?.classList.remove('hidden');
+        } else {
+            orgWrapper?.classList.add('hidden');
+        }
+
+        // Reference No → ISSUED (Notice + Circular)
+        if (action.includes('issued')) {
+            refWrapper?.classList.remove('hidden');
+            if (refInput) refInput.required = true;
+        } else {
+            refWrapper?.classList.add('hidden');
+            if (refInput) {
+                refInput.required = false;
+                refInput.value = '';
+            }
+        }
+    }
+
+    actionTypeSelect?.addEventListener('change', handleActionVisibility);
+    handleActionVisibility(); // initial load
+
+    /* ================= FORM SUBMIT VALIDATION ================= */
     form.addEventListener('submit', function (e) {
-        e.preventDefault(); // IMPORTANT
+        e.preventDefault();
 
         toastr.clear();
 
-        // Required fields
         if (!subjectInput?.value.trim()) {
             toastr.error('Subject is required');
             return;
@@ -294,9 +340,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const mode = modeInput.value;
+        const mode = modeInput?.value;
 
-        /* ===== ATTACHMENT VALIDATION ===== */
+        /* ATTACHMENT MODE CHECK */
         if (mode === 'attachment' && attachmentInput?.files.length > 0) {
             const file = attachmentInput.files[0];
 
@@ -311,12 +357,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        /* ===== SIGNATURE IMAGE VALIDATION ===== */
+        /* SIGNATURE IMAGE CHECK */
         if (signatureInput?.files.length > 0) {
             const img = signatureInput.files[0];
 
             if (!img.type.startsWith('image/')) {
-                toastr.error('Signature must be an image file');
+                toastr.error('Signature must be an image');
                 return;
             }
 
@@ -326,10 +372,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Prevent double submit
         submitBtn.disabled = true;
-
-        // ✅ SAFE SUBMIT
         form.submit();
     });
     // Sync initial mode UI (edit page)
