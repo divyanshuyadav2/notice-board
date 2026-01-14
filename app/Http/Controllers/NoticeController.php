@@ -138,7 +138,7 @@ class NoticeController extends Controller
                                 ⋮
                             </button>
 
-                            <div class="action-menu hidden absolute right-0 mt-2 w-40 
+                            <div class="action-menu hidden absolute right-0 mt-2 w-40  cursor-pointer
                                         rounded-md 
                                         shadow-lg z-50" style="background-color: #0d2942;">
 
@@ -148,7 +148,7 @@ class NoticeController extends Controller
                                     Edit
                                 </a>
 
-                                <a href="'.route('notices.show', $row->Ntic_Crcl_UIN).'"
+                                <a href="'.route('notices.publish', $row->Ntic_Crcl_UIN).'"
                                 class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
                                     <i class="bi bi-eye"></i>
                                     Update
@@ -442,7 +442,11 @@ public function update(Request $request, $uin)
             ->with('error', 'Something went wrong while updating the notice.');
     }
 }
-
+  public function publish(AdmnTranNticCrcl $notice)
+    {
+        
+        return view('notices.publish', compact('notice'));
+    }
 
 
 }
