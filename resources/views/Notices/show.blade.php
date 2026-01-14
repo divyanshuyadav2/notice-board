@@ -40,12 +40,7 @@
     {{-- ================= HEADER ================= --}}
     <div class="flex items-center gap-1 mb-6">
         {{-- LOGO --}}
-        <img
-            src="https://partakedigital.in/assets/images/PARTAKE.png"
-            alt="Organization Logo"
-            class="w-15 h-15 object-contain">
-
-        {{-- ORG DETAILS --}}
+   
         <div class="text-center flex-1">
             <h1 class="text-xl font-bold uppercase">
                 {{ $notice->Orga_Name }}
@@ -55,30 +50,12 @@
                 {{ $notice->Dept ?? '—' }}
             </p>
 
-            <p class="text-xs mt-1">
-                Static Address Line 1, City – 123456
-            </p>
+         
         </div>
     </div>
 
     <hr class="border-black mb-6">
-
-    {{-- ================= META ================= --}}
-    <div class="flex justify-between text-sm mb-6">
-        <div>
-            @if ($notice->Docu_Type=="notice")
-                <strong>Ref:</strong> NOTICE/{{ $notice->Ntic_Crcl_UIN }}
-            @elseif ($notice->Docu_Type=="circular")
-                <strong>Ref:</strong> CIRCULAR/{{ $notice->Ntic_Crcl_UIN }}
-            @endif
-        </div>
-        <div>
-            <strong>Date:</strong>
-            {{ \Carbon\Carbon::parse($notice->Ntic_Crcl_Dt)->format('d M Y') }}
-        </div>
-    </div>
-
-    {{-- ================= TITLE ================= --}}
+        {{-- ================= TITLE ================= --}}
     <div class="text-center mb-6">
         @if ($notice->Docu_Type=="notice")
             <h2 class="font-bold underline text-lg">
@@ -90,10 +67,35 @@
             </h2>
         @endif
 
-        <p class="mt-3 font-semibold uppercase">
+       
+    </div>
+
+    {{-- ================= META ================= --}}
+    <div class="flex justify-between text-sm mb-2">
+        <div>
+                <div>
+                    <strong>Date:</strong>
+                    {{ \Carbon\Carbon::parse($notice->Ntic_Crcl_Dt)->format('d M Y') }}
+                </div>
+        </div>
+        <div>
+                <div>
+                    <strong>Date:</strong>
+                    {{ \Carbon\Carbon::parse($notice->Eft_Dt)->format('d M Y') }}
+                </div>
+               <div>        
+                  <strong>Ref_No: </strong>{{ $notice->Ref_No }}
+              </div>
+        </div>
+        
+        
+    </div>
+        <div class="text-center mb-6">
+             <p class="mt-3 font-semibold uppercase">
             {{ $notice->Subj }}
         </p>
-    </div>
+        </div>
+
 
     {{-- ================= CONTENT ================= --}}
     <div class="text-sm leading-7 text-justify">
@@ -101,18 +103,10 @@
     </div>
 
     {{-- ================= SIGNATORY ================= --}}
-    <div class="mt-24 flex justify-between items-end">
-        <div>
-            <p class="text-sm font-semibold">
-                Copy to:
-            </p>
-            <ul class="text-sm list-disc ml-4 mt-1">
-                <li>All Departments</li>
-                <li>Notice Board</li>
-            </ul>
-        </div>
+    <div class="mt-24 flex ">
+      
 
-        <div class="text-right">
+        <div >
             @if ($notice->Imgs_Sgnt)
                 <img
                     src="{{ asset('storage/'.$notice->Imgs_Sgnt) }}"
@@ -133,12 +127,13 @@
     </div>
 
     {{-- ================= FOOTER ================= --}}
-    <div class="border-t mt-12 pt-4 text-center text-xs">
-        <p>
+    <div class=" mt-12 pt-4 text-center text-xs">
+        {{-- <p>
             {{ $notice->Orga_Name }} |
             Static Address, City – 123456 |
             Email: info@example.com
-        </p>
+        </p> --}}
+         <hr class="border-black mb-6">
     </div>
 
 </div>

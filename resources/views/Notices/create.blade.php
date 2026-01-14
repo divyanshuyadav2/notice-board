@@ -34,11 +34,18 @@
 
     {{-- MODE SWITCH --}}
     <div class="flex gap-2 mb-6">
-        <button id="draftBtn" class="mode-btn mode-active">Draft Mode</button>
-        <button id="attachBtn" class="mode-btn">Attachment Mode</button>
+        <button type="button" id="draftBtn"
+        class="mode-btn {{ old('mode','draft')==='draft'?'mode-active':'' }}">
+            Draft Mode
+        </button>
+
+        <button type="button" id="attachBtn"
+            class="mode-btn {{ old('mode')==='attachment'?'mode-active':'' }}">
+            Attachment Mode
+        </button>
     </div>
 
- {{-- FORM --}}
+ {{-- FORM Live AJAX ref_no check --}}
     <form method="POST" action="{{ route('notices.store') }}"  enctype="multipart/form-data" class="space-y-6" id="create-notice-form">
         @csrf
                <div class="mt-6 card">
@@ -46,47 +53,59 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-        <!-- NOTICE -->
-        <label class="flex items-center gap-3 bg-[#0b2436] border border-[#1f425a] rounded-lg px-4 py-3 cursor-pointer hover:border-blue-400 transition">
-            <input
-                type="radio"
-                name="document_type"
-                value="notice"
-                checked
-                class="accent-blue-500"
-            />
-            <span class="text-gray-200 font-medium">Notice</span>
-        </label>
+        <div>
+            <label class="label">Action Type</label>
+            <select name="action_type" id="actionType" class="input" required>
+                <!-- Draft mode options -->
+                <option value="" selected>Seelct Type </option>
+                <option value="notice_issued">Notice Issued</option>
+                <option value="circular_issued">Circular Issued</option>
 
-        <!-- CIRCULAR -->
-        <label class="flex items-center gap-3 bg-[#0b2436] border border-[#1f425a] rounded-lg px-4 py-3 cursor-pointer hover:border-green-400 transition">
-            <input
-                type="radio"
-                name="document_type"
-                value="circular"
-                class="accent-green-500"
-            />
-            <span class="text-gray-200 font-medium">Circular</span>
-        </label>
+                <!-- Attachment mode options -->
+                <option value="notice_received" class="attach-only hidden">Notice Received</option>
+                <option value="circular_received" class="attach-only hidden">Circular Received</option>
+            </select>
+        </div>
 
-    </div>
-</div>
+        <div id="organizationWrapper" class="hidden">
+            <label class="label">Organization Name</label>
+            <input type="text" name="organization_name" class="input"
+                placeholder="Enter Organization Name" value="D S Computer">
+        </div>
+
+            </div>
+        </div>
 
 
 
         {{-- IMPORTANT HIDDEN FIELDS --}}
-        <input type="hidden" name="mode" id="modeInput" value="draft">
+        <input type="hidden" name="mode" id="modeInput" value="{{ old('mode', 'draft') }}">
         <input type="hidden" name="status" id="statusInput" value="draft">
 
         {{-- NOTICE DETAILS --}}
         <div class="card">
-            <h3 class="card-title">Notice Details</h3>
+            <h3 class="card-title"> Details</h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="hidden">
-                    <label class="label">Organization Name</label>
-                    <input type="text" name="organization_name" class="input" value="D S Computer Center">
+                
+                <div>
+                    <label class="label">Issued/Recevied Date</label>
+                    <input type="date" name="notice_date" class="input" value="{{ old('notice_date') }}" style="color: #fff; color-scheme: dark;" required>
+                    
                 </div>
+                <div>
+                    <label class="label">Effective Date</label>
+                    <input type="date" name="effective_date" value="{{ old('effective_date') }}"  class="input" style="color: #fff; color-scheme: dark;" required>
+                </div>
+                <div>
+                    <label class="label">Subject</label>
+                    <input type="text" name="subject" class="input" value="{{ old('subject') }}" required>
+                </div>
+                <div id="referenceWrapper">
+                    <label class="label">Reference No.</label>
+                    <input type="text" name="ref_no" value="{{ old('ref_no') }}" class="input" id="refNoInput"  required>
+                </div>
+
                  <div>
                     <label class="label">Department</label>
                      <select name="department" class="input">
@@ -98,42 +117,32 @@
                         <option value="Operations" {{ old('department')=='Operations'?'selected':'' }}>Operations</option>
                     </select>
                 </div>
-                <div>
-                    <label class="label">Subject</label>
-                    <input type="text" name="subject" class="input" required>
-                </div>
-                <div>
-                    <label class="label">Notice Date</label>
-                    <input type="date" name="notice_date" class="input" required>
-                </div>
-                <div>
-                    <label class="label">Effective Date</label>
-                    <input type="date" name="effective_date" class="input" required>
-                </div>
+                
+              
             </div>
         </div>
 
         {{-- CONTENT --}}
         <div class="card">
-            <h3 class="card-title">Notice Content</h3>
 
             {{-- TEXT MODE --}}
-            <div id="draftMode">
-                <textarea id="editor" name="content"></textarea>
+            <div id="draftMode" class="{{ old('mode','draft')==='attachment'?'hidden':'' }}">
+                    <textarea id="editor" name="content">{{ old('content') }}</textarea>
             </div>
 
-            {{-- ATTACHMENT MODE --}}
-            <div id="attachMode" class="hidden">
+             {{-- Attachment --}}
+            <div id="attachMode"
+                class="{{ old('mode','draft')==='draft'?'hidden':'' }}">
                 <label class="label">Upload PDF</label>
-                <input type="file"
-                       name="attachment"
-                       accept="application/pdf"
-                       class="input" id="attachmentInput">
+                <input type="file" name="attachment"
+                    id="attachmentInput"
+                    class="input"
+                    accept="application/pdf">
             </div>
         </div>
 
         {{-- SIGNATURE --}}
-        <div class="card" id="signatorySection">
+        <div class="card" id="signatorySection" class="{{ old('mode','draft')==='attachment'?'hidden':'' }}">
             <h3 class="card-title">Authorized Signatory</h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -144,17 +153,19 @@
 
                 <div>
                     <label class="label">Authorized Person Name</label>
-                    <input type="text" name="authorized_person_name" class="input">
+                    <input type="text" name="authorized_person_name" class="input" value="{{ old('authorized_person_name') }}">
                 </div>
 
                 <div>
                     <label class="label">Designation</label>
-                    <input type="text" name="designation" class="input">
+                    <input type="text" name="designation" class="input" value="{{ old('designation') }}">
                 </div>
 
                
             </div>
         </div>
+       <input type="hidden" name="document_type" id="documentTypeInput"
+       value="{{ old('document_type') }}">
 
 
         {{-- ACTIONS --}}
@@ -252,6 +263,8 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('CKEditor not loaded');
     }
 
+
+    /* ================= ELEMENT REFERENCES ================= */
     const draftBtn = document.getElementById('draftBtn');
     const attachBtn = document.getElementById('attachBtn');
     const draftMode = document.getElementById('draftMode');
@@ -260,7 +273,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusInput = document.getElementById('statusInput');
     const saveDraftBtn = document.getElementById('saveDraftBtn');
     const signatorySection = document.getElementById('signatorySection');
-   const form = document.getElementById('create-notice-form');
+    const form = document.getElementById('create-notice-form');
+
     if (!form) return;
 
     const attachmentInput = document.getElementById('attachmentInput');
@@ -268,7 +282,66 @@ document.addEventListener('DOMContentLoaded', function () {
     const subjectInput = document.querySelector('input[name="subject"]');
     const noticeDateInput = document.querySelector('input[name="notice_date"]');
 
-   
+    // NEW FIELDS
+    const actionTypeSelect = document.getElementById('actionType');
+    const orgWrapper = document.getElementById('organizationWrapper');
+    const documentTypeInput = document.getElementById('documentTypeInput');
+
+    if (modeInput.value === 'attachment') {
+        signatorySection.classList.add('hidden');
+    } else {
+        signatorySection.classList.remove('hidden');
+    }
+
+
+    /* ================= MODE-BASED ACTION OPTIONS ================= */
+    function syncActionOptions(mode) {
+        document.querySelectorAll('.attach-only').forEach(opt => {
+            opt.classList.toggle('hidden', mode !== 'attachment');
+        });
+
+        if (mode === 'draft') {
+            actionTypeSelect.value = 'notice_issued';
+        } else {
+            actionTypeSelect.value = 'notice_received';
+        }
+
+        handleActionVisibility();
+    }
+        // Initial load
+        handleActionVisibility();
+        syncDocumentType();
+    /* ================= ACTION TYPE VISIBILITY ================= */
+    function handleActionVisibility() {
+        const action = actionTypeSelect.value;
+
+        // Organization input
+        if (action.includes('received')) {
+            orgWrapper.classList.remove('hidden');
+        } else {
+            orgWrapper.classList.add('hidden');
+        }
+
+        
+    }
+    function syncDocumentType() {
+            const action = actionTypeSelect.value;
+
+            if (
+                action === 'notice_issued' ||
+                action === 'notice_received'
+            ) {
+                documentTypeInput.value = 'notice';
+            }
+
+            if (
+                action === 'circular_issued' ||
+                action === 'circular_received'
+            ) {
+                documentTypeInput.value = 'circular';
+            }
+    }
+
 
     /* ================= MODE TOGGLE ================= */
     draftBtn?.addEventListener('click', () => {
@@ -278,6 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
         draftMode.classList.remove('hidden');
         attachMode.classList.add('hidden');
         signatorySection?.classList.remove('hidden');
+        syncActionOptions('draft');
     });
 
     attachBtn?.addEventListener('click', () => {
@@ -287,30 +361,50 @@ document.addEventListener('DOMContentLoaded', function () {
         attachMode.classList.remove('hidden');
         draftMode.classList.add('hidden');
         signatorySection?.classList.add('hidden');
+        syncActionOptions('attachment');
     });
 
-   
+    /* ================= ACTION CHANGE ================= */
+    actionTypeSelect.addEventListener('change', () => {
+        handleActionVisibility();
+        syncDocumentType();
+    });
+
+    /* ================= FORM SUBMIT + VALIDATION ================= */
     form.addEventListener('submit', function (e) {
-        e.preventDefault(); // VERY IMPORTANT
+    console.log('check');
+    
+        e.preventDefault();
 
         toastr.clear();
-
         statusInput.value = 'draft';
 
-        // ===== BASIC VALIDATION =====
+        // BASIC
         if (!subjectInput?.value.trim()) {
             toastr.error('Subject is required');
             return;
         }
 
         if (!noticeDateInput?.value) {
-            toastr.error('Notice date is required');
+            toastr.error('Issued / Received date is required');
             return;
         }
 
+        const action = actionTypeSelect.value;
         const mode = modeInput.value;
 
-        // ===== ATTACHMENT VALIDATION =====
+        // ORGANIZATION VALIDATION
+        if (action.includes('received')) {
+            const orgInput = document.querySelector('input[name="organization_name"]');
+            if (!orgInput || !orgInput.value.trim()) {
+                toastr.error('Organization name is required');
+                return;
+            }
+        }
+
+    
+
+        // ATTACHMENT VALIDATION
         if (mode === 'attachment') {
             if (!attachmentInput || attachmentInput.files.length === 0) {
                 toastr.error('Please upload a PDF file');
@@ -330,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // ===== SIGNATURE IMAGE VALIDATION =====
+        // SIGNATURE VALIDATION
         if (signatureInput && signatureInput.files.length > 0) {
             const img = signatureInput.files[0];
 
@@ -346,12 +440,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Prevent double submit
-        const btn = document.getElementById('saveDraftBtn');
-        btn.disabled = true;
+        saveDraftBtn.disabled = true;
 
-        // ✅ SAFE SUBMIT
+        // FINAL SUBMIT
         form.submit();
     });
+
+    /* ================= INITIAL LOAD ================= */
 
 
 
@@ -442,6 +537,7 @@ document.addEventListener('DOMContentLoaded', function () {
 .doc-card-inner:hover {
     transform: translateY(-2px);
 }
+
 
 </style>
 @endsection

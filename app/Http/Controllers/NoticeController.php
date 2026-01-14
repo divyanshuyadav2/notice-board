@@ -29,8 +29,10 @@ class NoticeController extends Controller
                 'Mode',
                 'Docu_Type',
                 'Eft_Dt',
+                'Dept',
                 'Athr_Pers_Name',
-                'Pbli_On'
+                'Pbli_On',
+                'Ref_No'
             ])->orderBy('Ntic_Crcl_Dt', 'desc');
 
             return DataTables::of($query)
@@ -39,20 +41,15 @@ class NoticeController extends Controller
                 /* ================= TITLE COLUMN ================= */
                 ->addColumn('title', function ($row) {
 
-                    $initial = strtoupper(substr($row->Subj, 0, 1));
-
+                    $initial = strtoupper(substr($row->Docu_Type, 0, 1));
+                    $bgclass=$row->Docu_Type === 'circular'? 'bg-green-600': 'bg-yellow-500';
                     // Draft / Published dot
-                    $dotColor = $row->Stau === 'published'
-                        ? 'bg-green-500'
-                        : 'bg-yellow-400';
-
-                    $effectiveDate = $row->Eft_Dt
-                        ? \Carbon\Carbon::parse($row->Eft_Dt)->format('d M Y')
-                        : '-';
+                    $dotColor = $row->Stau === 'draft'
+                        ?'bg-yellow-400':'';
 
                     return '
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-cyan-600
+                        <div  class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full '.$bgclass.'
                                         flex items-center justify-center
                                         text-white font-bold">
                                 '.$initial.'
@@ -68,24 +65,38 @@ class NoticeController extends Controller
                                 </div>
 
                                 <div class="flex items-center gap-3 text-xs text-gray-400">
-                                    <span>'.ucfirst($row->Mode).'</span>
+                                    <span>Ref_No. '.$row->Ref_No.'</span>
                                 
                                 </div>
                             </div>
                         </div>
                     ';
                 })
+                 ->addColumn('Athr_Pers_Name', function ($row) {
 
-                /* ================= DOCUMENT TYPE BADGE ================= */
-                ->addColumn('document_type', function ($row) {
-
-                    $color = $row->Stau === 'published'
-                        ? 'bg-green-600 text-white'
-                        : 'bg-yellow-500 text-black';
+                   
 
                     return '
-                        <span class="px-3 py-1 text-xs rounded '.$color.'">
-                            '.ucfirst($row->Docu_Type).'
+                     <div>
+                        <div class="text-white font-medium">
+                        '.$row->Athr_Pers_Name.'
+                        </div>
+                        
+                        <div class="text-white text-xs rounded">
+                         '.ucfirst($row->Dept).'
+                        </div>
+                    </div>
+                    ';
+                })
+
+                /* ================= DOCUMENT TYPE BADGE ================= */
+                ->addColumn('Orga_Name', function ($row) {
+
+                   
+
+                    return '
+                        <span class="px-3 py-1 text-xs rounded">
+                            '.ucfirst($row->Orga_Name).'
                         </span>
                     ';
                 })
@@ -104,10 +115,10 @@ class NoticeController extends Controller
                 return '
                     <div class="text-sm leading-tight">
                         <div class="text-gray-200">
-                            <span class="font-medium">Effective:</span> '.$effectiveDate.'
+                            <span class="font-medium"></span> '.$effectiveDate.'
                         </div>
                         <div class="text-gray-400 text-xs">
-                            <span class="font-medium">Published:</span> '.$publishedDate.'
+                            <span class="font-medium"></span> '.$publishedDate.'
                         </div>
                     </div>
                 ';
@@ -140,15 +151,20 @@ class NoticeController extends Controller
                                 <a href="'.route('notices.show', $row->Ntic_Crcl_UIN).'"
                                 class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
                                     <i class="bi bi-eye"></i>
-                                    View
+                                    Update
                                 </a>
                             </div>
                         </div>
                         ';
                     })
 
-
-                ->rawColumns(['title', 'document_type','date', 'action'])
+                ->setRowAttr([
+                        'data-href' => function ($row) {
+                            return route('notices.show', $row->Ntic_Crcl_UIN);
+                        },
+                        'class' => 'cursor-pointer'
+                    ])
+                ->rawColumns(['title','Athr_Pers_Name', 'Orga_Name','date', 'action'])
                 ->make(true);
         }
 
@@ -173,25 +189,48 @@ class NoticeController extends Controller
       
         try {
 
+   //     dd($request);
             /* ================= VALIDATION ================= */
 
             $rules = [
-                'organization_name'        => 'required|string|max:255',
-                'notice_date'              => 'required|date',
-                'subject'                  => 'required|string|max:255',
-                'effective_date'           => 'nullable|date',
+                'action_type'           => 'required|in:notice_issued,notice_received,circular_issued,circular_received',
+                'notice_date'           => 'required|date',
+                'subject'               => 'required|string|max:255',
+                'effective_date'        => 'nullable|date',
+                'ref_no'                =>'required|string|max:255|',
+                'mode'                  => 'required|in:draft,attachment',
+                'status'                => 'required|in:draft,published',
 
-                'mode'                     => 'required|in:draft,attachment',
-                'status'                   => 'required|in:draft,published',
+                'document_type'         => 'required|in:notice,circular',
+                'department'            => 'nullable|string|max:255',
 
-                'signature_image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-                'authorized_person_name'   => 'nullable|string|max:255',
-                'designation'              => 'nullable|string|max:255',
-                'department'               => 'nullable|string|max:255',
-
-                'document_type'            => 'required|in:notice,circular',
+                'signature_image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'authorized_person_name'=> 'nullable|string|max:255',
+                'designation'           => 'nullable|string|max:255',
             ];
+            if ($request->filled('ref_no')) {
 
+                $exists = AdmnTranNticCrcl::where('Ref_No', $request->ref_no)->exists();
+
+                if ($exists) {
+                    return redirect()
+                        ->back()
+                        ->withInput()
+                        ->withErrors([
+                            'ref_no' => 'This reference number already exists.'
+                        ]);
+                }
+            }
+
+            // Organization required only for RECEIVED
+            if (str_contains($request->action_type, 'received')) {
+                $rules['organization_name'] = 'required|string|max:255';
+            } else {
+                $rules['organization_name'] = 'nullable|string|max:255';
+            }
+
+            // Reference number required only for ISSUED
+          
             if ($request->mode === 'attachment') {
                 $rules['attachment'] = 'required|file|mimes:pdf|max:5120';
             } else {
@@ -219,10 +258,15 @@ class NoticeController extends Controller
             $notice = AdmnTranNticCrcl::create([
 
                 /* CORE */
-                'Orga_Name'        => $validated['organization_name'],
+                'Orga_Name'        => $validated['organization_name'] ?? null,
                 'Ntic_Crcl_Dt'     => $validated['notice_date'],
                 'Subj'             => $validated['subject'],
+                'Ref_No'           => $validated['ref_no'] ?? null,
                 'Eft_Dt'           => $validated['effective_date'] ?? null,
+
+                /* ACTION */
+                'Action_Type'      => $validated['action_type'],
+                'Docu_Type'        => $validated['document_type'],
 
                 /* CONTENT */
                 'Cntn'             => $validated['mode'] === 'draft'
@@ -235,7 +279,6 @@ class NoticeController extends Controller
 
                 'mode'             => $validated['mode'],
                 'Stau'             => $validated['status'],
-                'Docu_Type'        => $validated['document_type'],
 
                 /* SIGNATORY */
                 'Imgs_Sgnt'        => $signaturePath,
@@ -244,8 +287,9 @@ class NoticeController extends Controller
                 'Dept'             => $validated['department'] ?? null,
 
                 /* AUDIT */
-                'CrBy'            => auth()->id() ?? 1,
-                'CrOn'            => now(),
+                'CrBy'             => auth()->id() ?? 1,
+                'CrOn'             => now(),
+
                 'Pbli_By'          => $validated['status'] === 'published'
                                         ? (auth()->id() ?? 1)
                                         : null,
@@ -255,6 +299,7 @@ class NoticeController extends Controller
                                         : null,
             ]);
 
+
             return redirect()
                 ->route('notices.index')
                 ->with('success', 'Notice saved successfully.');
@@ -263,7 +308,7 @@ class NoticeController extends Controller
 
             return redirect()
                 ->back()
-                ->withErrors($e->errors())
+                ->withErrors($e->getMessage())
                 ->withInput();
 
         } catch (\Exception $e) {
@@ -274,7 +319,7 @@ class NoticeController extends Controller
 
             return redirect()
                 ->back()
-                ->with('error', 'Something went wrong while saving the notice.')
+                ->with('error', $e->getMessage())
                 ->withInput();
         }
     }

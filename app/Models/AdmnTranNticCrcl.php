@@ -38,5 +38,8 @@ class AdmnTranNticCrcl extends Model
         'MoOn',
         'Pbli_By',
         'Pbli_On',
+        'Ref_No',
+        'Action_Type'
+
     ];
 }
