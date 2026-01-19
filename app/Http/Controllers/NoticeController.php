@@ -29,6 +29,8 @@ class NoticeController extends Controller
                 'Mode',
                 'Docu_Type',
                 'Eft_Dt',
+                'Athr_Pers_Name',
+                'Pbli_On'
             ])->orderBy('Ntic_Crcl_Dt', 'desc');
 
             return DataTables::of($query)
@@ -66,8 +68,8 @@ class NoticeController extends Controller
                                 </div>
 
                                 <div class="flex items-center gap-3 text-xs text-gray-400">
-                                    <span>'.ucfirst($row->mode).'</span>
-                                    <span>Effective: '.$effectiveDate.'</span>
+                                    <span>'.ucfirst($row->Mode).'</span>
+                                
                                 </div>
                             </div>
                         </div>
@@ -90,22 +92,63 @@ class NoticeController extends Controller
 
                 /* ================= DATE ================= */
                 ->addColumn('date', function ($row) {
-                    return \Carbon\Carbon::parse($row->Ntic_Crcl_Dt)->format('d M Y');
-                })
+
+                $effectiveDate = $row->Eft_Dt
+                    ? \Carbon\Carbon::parse($row->Eft_Dt)->format('d M Y')
+                    : '-';
+
+                $publishedDate = $row->Pbli_On
+                    ? \Carbon\Carbon::parse($row->Pbli_On)->format('d M Y')
+                    : '-';
+
+                return '
+                    <div class="text-sm leading-tight">
+                        <div class="text-gray-200">
+                            <span class="font-medium">Effective:</span> '.$effectiveDate.'
+                        </div>
+                        <div class="text-gray-400 text-xs">
+                            <span class="font-medium">Published:</span> '.$publishedDate.'
+                        </div>
+                    </div>
+                ';
+            })
+
 
                 /* ================= ACTION ================= */
                 ->addColumn('action', function ($row) {
-                    return '
-                        <div class="text-right">
-                            <a href="'.route('notices.show', $row->Ntic_Crcl_UIN).'"
-                            class="text-gray-400 hover:text-white">
-                            ⋮
-                            </a>
-                        </div>
-                    ';
-                })
 
-                ->rawColumns(['title', 'document_type', 'action'])
+                        return '
+                        <div class="relative inline-block text-left">
+
+                            <button 
+                                class="action-btn text-gray-400 hover:text-white focus:outline-none"
+                                data-id="'.$row->Ntic_Crcl_UIN.'"
+                            >
+                                ⋮
+                            </button>
+
+                            <div class="action-menu hidden absolute right-0 mt-2 w-40 
+                                        rounded-md 
+                                        shadow-lg z-50" style="background-color: #0d2942;">
+
+                                <a href="'.route('notices.edit', $row->Ntic_Crcl_UIN).'"
+                                class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
+                                    <i class="bi bi-pencil"></i>
+                                    Edit
+                                </a>
+
+                                <a href="'.route('notices.show', $row->Ntic_Crcl_UIN).'"
+                                class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                        ';
+                    })
+
+
+                ->rawColumns(['title', 'document_type','date', 'action'])
                 ->make(true);
         }
 
@@ -127,6 +170,7 @@ class NoticeController extends Controller
 
     public function store(Request $request)
     {
+      
         try {
 
             /* ================= VALIDATION ================= */
@@ -241,6 +285,9 @@ class NoticeController extends Controller
         
         return view('notices.show', compact('notice'));
     }
+    public function edit(AdmnTranNticCrcl $notice){
+         return view('notices.edit', compact('notice'));
+    }
     public function updateStatus(Request $request, AdmnTranNticCrcl $notice)
     {
         
@@ -269,6 +316,87 @@ class NoticeController extends Controller
                 : 'Document moved back to draft'
         ]);
     }
+// update function
+
+public function update(Request $request, $uin)
+{
+    try {
+        $notice = AdmnTranNticCrcl::where('Ntic_Crcl_UIN', $uin)->firstOrFail();
+
+        /* ================= VALIDATION ================= */
+        $request->validate([
+            'document_type'           => 'required|in:notice,circular',
+            'subject'                 => 'required|string|max:255',
+            'notice_date'             => 'required|date',
+            'effective_date'          => 'nullable|date',
+            'department'              => 'nullable|string|max:100',
+            'authorized_person_name'  => 'nullable|string|max:255',
+            'designation'             => 'nullable|string|max:255',
+            'attachment'              => 'nullable|file|mimes:pdf|max:5120',
+            'signature_image'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        /* ================= BASIC FIELDS ================= */
+        $notice->Docu_Type       = $request->document_type;
+        $notice->Subj            = $request->subject;
+        $notice->Dept            = $request->department;
+        $notice->Ntic_Crcl_Dt    = \Carbon\Carbon::parse($request->notice_date);
+        $notice->Eft_Dt          = $request->effective_date
+                                    ? \Carbon\Carbon::parse($request->effective_date)
+                                    : null;
+        $notice->Athr_Pers_Name  = $request->authorized_person_name;
+        $notice->Dsig            = $request->designation;
+        $notice->Mode            = $request->mode ?? 'draft';
+        $notice->Stau            = $request->status ?? 'draft';
+
+        /* ================= CONTENT / ATTACHMENT ================= */
+        if ($request->mode === 'attachment') {
+
+            if ($request->hasFile('attachment')) {
+
+                // delete old attachment if exists
+                if ($notice->Attch_Path && Storage::disk('public')->exists($notice->Attch_Path)) {
+                    Storage::disk('public')->delete($notice->Attch_Path);
+                }
+
+                $notice->Attch_Path = $request->file('attachment')
+                    ->store('notices/attachments', 'public');
+            }
+
+            $notice->Cntn = null;
+
+        } else {
+            // Draft/Text mode
+            $notice->Cntn = $request->content;
+        }
+
+        /* ================= SIGNATURE IMAGE ================= */
+        if ($request->hasFile('signature_image')) {
+
+            if ($notice->Sign_Path && Storage::disk('public')->exists($notice->Sign_Path)) {
+                Storage::disk('public')->delete($notice->Sign_Path);
+            }
+
+            $notice->Sign_Path = $request->file('signature_image')
+                ->store('notices/signatures', 'public');
+        }
+
+        /* ================= SAVE ================= */
+        $notice->save();
+
+        return redirect()
+            ->route('notices.index')
+            ->with('success', 'Notice updated successfully.');
+
+    } catch (\Exception $e) {
+
+        
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Something went wrong while updating the notice.');
+    }
+}
 
 
 

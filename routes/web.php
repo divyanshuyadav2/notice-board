@@ -6,18 +6,21 @@ use App\Http\Controllers\NoticeController;
 Route::get('/', function () {
     return redirect()->route('notices.index');
 });
-
-// Notices dashboard (list)
-
-// Create notice form
-Route::get('/notices/create', function () {
-    return view('notices.create');
-})->name('notices.create');
-
-
 Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
-Route::get('/notices/create', [NoticeController::class, 'create'])->name('notices.create');
-Route::post('/notices', [NoticeController::class, 'store'])->name('notices.store');
-Route::get('/notices/{notice}', [NoticeController::class, 'show'])->name('notices.show');
-Route::post('/notices/{notice}/status', [NoticeController::class, 'updateStatus'])->name('notices.updateStatus');
 
+Route::get('/notices/create', [NoticeController::class, 'create'])
+    ->name('notices.create');
+
+Route::post('/notices', [NoticeController::class, 'store'])
+    ->name('notices.store');
+
+Route::get('/notices/{notice}', [NoticeController::class, 'show'])
+    ->name('notices.show');
+
+Route::get('/notices/{notice}/edit', [NoticeController::class, 'edit'])
+    ->name('notices.edit');
+
+Route::post('/notices/{notice}/status', [NoticeController::class, 'updateStatus'])
+    ->name('notices.updateStatus');
+Route::put('/notices/{notice}', [NoticeController::class, 'update'])
+    ->name('notices.update');

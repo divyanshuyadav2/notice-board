@@ -28,8 +28,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Toastr -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <!-- VITE (AFTER jQuery) -->
@@ -43,39 +42,88 @@
 
 <body class="font-sans antialiased bg-[#021420] text-gray-200 min-h-screen flex flex-col">
 
-    {{-- Top Header --}}
-    <header class="border-b border-[#123C55] bg-[#021420]">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <header class="border-b border-[#123C55] bg-[#021420] sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
 
-            {{-- Brand --}}
-            <div>
-                <h1 class="text-lg font-semibold text-white tracking-wide">
-                    D S Computer Center
-                </h1>
-                <p class="text-xs text-gray-400">
-                    Notice Management System
-                </p>
-            </div>
+        {{-- LEFT --}}
+        <div class="flex flex-col leading-tight">
+            <h1 class="text-lg font-semibold text-white">
+                D S Computer Center
+            </h1>
 
-            {{-- Right Actions --}}
-            <div class="flex items-center gap-4 text-sm">
-
-                @auth
-                    <div class="text-gray-300">
-                        {{ auth()->user()->name }}
-                    </div>
-                @else
-                    <span class="text-gray-400">Admin Panel</span>
-                @endauth
-
-                {{-- Hamburger (future sidebar) --}}
-                <button class="text-gray-400 hover:text-white focus:outline-none">
-                    ☰
-                </button>
-            </div>
-
+            @auth
+                <span class="text-xs text-gray-400">
+                    {{ auth()->user()->name }}
+                </span>
+            @endauth
         </div>
-    </header>
+
+        {{-- RIGHT MENU BUTTON --}}
+        <div class="relative">
+            <button
+                id="menuToggle"
+                class="w-10 h-10 flex items-center justify-center text-white hover:bg-[#0c2438]"
+                aria-label="Menu"
+            >
+                <i class="bi bi-list text-xl"></i>
+            </button>
+<!-- Overlay -->
+<div id="menuOverlay" 
+    class="hidden fixed inset-0 bg-black/80 z-[9998]">
+</div>
+
+<!-- Dropdown -->
+<div id="menuDropdown"
+    class="hidden fixed top-16 right-6 w-64
+        shadow-2xl
+        z-[9999]
+        rounded-xl
+        overflow-hidden
+        "
+    style="background-color: #0d2942;">
+
+    <!-- Change -->
+    <a href="#"
+        class="flex items-center gap-3 px-4 py-3.5 text-gray-200
+               hover:bg-[#1a3d5c] transition "
+        style="background-color: #0d2942;">
+        <i class="bi bi-arrow-repeat text-blue-400 text-lg"></i>
+        <span>Change</span>
+    </a>
+
+
+    <!-- Back -->
+    <button
+        id="menuBack"
+        type="button"
+        class="w-full flex items-center gap-3 px-4 py-3.5 text-left
+               text-gray-200 hover:bg-[#1a3d5c] transition "
+        style="background-color: #0d2942;">
+        <i class="bi bi-arrow-left text-lg"></i>
+        <span>Back</span>
+    </button>
+
+    <!-- Exit -->
+    <form method="POST" >
+        @csrf
+        <button
+            type="submit"
+            class="w-full flex items-center gap-3 px-4 py-3.5 text-left
+                   text-red-400 hover:bg-red-900/40 transition"
+            style="background-color: #0d2942;">
+            <i class="bi bi-box-arrow-right text-lg"></i>
+            <span>Exit</span>
+        </button>
+    </form>
+</div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
 
     {{-- Main Content --}}
     <main class="flex-1">
@@ -91,32 +139,46 @@
         </div>
     </footer>
 
-    <script>
+   <script>
+
     toastr.options = {
-        closeButton: true,
-        progressBar: true,
-        positionClass: "toast-top-right",
-        timeOut: "4000",
-        extendedTimeOut: "1000",
-        showMethod: "fadeIn",
-        hideMethod: "fadeOut"
+    closeButton: true,
+    progressBar: true,
+    positionClass: "toast-top-right",
+    timeOut: "4000",
+    extendedTimeOut: "1000",
+    preventDuplicates: true,
+    newestOnTop: true,
     };
+        document.addEventListener('DOMContentLoaded', () => {
+           // Get elements
+const menuBtn = document.getElementById('menuToggle'); // your hamburger button
+const menuDropdown = document.getElementById('menuDropdown');
+const menuOverlay = document.getElementById('menuOverlay');
+const menuBack = document.getElementById('menuBack');
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const alert = document.getElementById('autoDismissAlert');
+// Toggle menu
+menuBtn.addEventListener('click', () => {
+    menuDropdown.classList.toggle('hidden');
+    menuOverlay.classList.toggle('hidden');
+});
 
-        if (alert) {
-            setTimeout(() => {
-                alert.style.transition = 'opacity 0.5s ease';
-                alert.style.opacity = '0';
+// Close on overlay click
+menuOverlay.addEventListener('click', () => {
+    menuDropdown.classList.add('hidden');
+    menuOverlay.classList.add('hidden');
+});
 
-                setTimeout(() => {
-                    alert.remove();
-                }, 500);
-            }, 1000);
-        }
-    });
+// Close on back button
+menuBack.addEventListener('click', () => {
+    menuDropdown.classList.add('hidden');
+    menuOverlay.classList.add('hidden');
+});
+        });
     </script>
+
+
+
 
     <!-- Page-specific scripts -->
     @stack('scripts')
