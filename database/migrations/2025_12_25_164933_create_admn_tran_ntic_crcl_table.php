@@ -18,7 +18,8 @@ return new class extends Migration
             /* ================= BASIC INFO ================= */
             $table->string('Orga_Name');                      // Orga_Name
             $table->date('Ntic_Crcl_Dt');                     // Ntic_Crcl_Dt
-            $table->string('Subj');                           // Subj
+            $table->string('Subj');        // Subj
+              $table->string('Ref_No')->nullable();                   
             $table->date('Eft_Dt')->nullable();               // Eft_Dt
 
             /* ================= CONTENT ================= */
@@ -48,8 +49,18 @@ return new class extends Migration
 
             /* ================= INDEXES ================= */
             $table->index(['Stau', 'Docu_Type']);
-            $table->index('Ntic_Crcl_Dt');
-        });
+            $table->index('Ntic_Crcl_Dt'); 
+
+            $table->enum('Action_Type', [
+        'notice_issued',
+        'notice_received',
+        'circular_issued',
+        'circular_received'
+       ]);
+
+  
+            });
+            
     }
 
     public function down(): void

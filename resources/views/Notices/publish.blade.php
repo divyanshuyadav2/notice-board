@@ -1,11 +1,12 @@
 @extends('layouts.layout')
 
-@section('title', 'View Notice')
+@section('title', 'Publish Doc')
 
 @section('content')
-<div class=" justify-end mb-6 gap-3 hidden">
+<div class="flex justify-end mb-6 gap-3">
 
     @if ($notice->Stau === 'draft')
+  
         <button
             onclick="confirmStatusChange({{ $notice->Ntic_Crcl_UIN }}, 'published')"
             class="bg-green-600 hover:bg-green-700 text-white
@@ -148,7 +149,7 @@ function confirmStatusChange(noticeId, status) {
     const isPublish = status === 'published';
 
     Swal.fire({
-        title: isPublish ? 'Publish Notice?' : 'Move to Draft?',
+        title: isPublish ? 'Publish Document?' : 'Move to Draft?',
         text: isPublish
             ? 'This  will become publicly visible.'
             : 'This  will be hidden from public view.',

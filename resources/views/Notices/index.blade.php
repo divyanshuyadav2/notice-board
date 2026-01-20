@@ -51,9 +51,9 @@
                         
                         <th class="px-4 py-3">Description</th>
                         <th class="px-4 py-3">Authorised Person</th>
-                        <th class="px-4 py-3">Type</th>
-                        <th class="px-4 py-3">Effective Date /Published Date</th>
-                        <th class="px-4 py-3 text-right">Actions</th>
+                        <th class="px-4 py-3">Organization Name</th>
+                        <th class="px-4 py-3">Effective /Published Date</th>
+                        <th class="px-4 py-3 text-right"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -385,8 +385,8 @@ $(document).ready(function () {
                 },
 
                 {
-                    data: 'document_type',         // Badge (Notice / Circular)
-                    name: 'Docu_Type',
+                    data: 'Orga_Name',         // Badge (Notice / Circular)
+                    name: 'Orga_Name',
                     orderable: false,
                     searchable: true
                 },
@@ -562,5 +562,17 @@ document.addEventListener('click', function (e) {
         menu.classList.toggle('hidden');
     }
 });
+$(document).on('click', '#noticesTable tbody tr', function (e) {
+    // prevent click when clicking action menu or button
+    if ($(e.target).closest('.action-btn, .action-menu, a').length) {
+        return;
+    }
+
+    let url = $(this).data('href');
+    if (url) {
+        window.location.href = url;
+    }
+});
+
 </script>
 @endpush
