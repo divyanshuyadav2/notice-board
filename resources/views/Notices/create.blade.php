@@ -106,7 +106,7 @@
                     <input type="text" name="ref_no" value="{{ old('ref_no') }}" class="input" id="refNoInput"  required>
                 </div>
 
-                 <div>
+                 <div class="" id="depart-ment">
                     <label class="label">Department</label>
                      <select name="department" class="input">
                         <option value="">Select Department</option>
@@ -286,9 +286,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const actionTypeSelect = document.getElementById('actionType');
     const orgWrapper = document.getElementById('organizationWrapper');
     const documentTypeInput = document.getElementById('documentTypeInput');
+    const department = document.getElementById('depart-ment');
 
     if (modeInput.value === 'attachment') {
         signatorySection.classList.add('hidden');
+         syncActionOptions('attachment');
     } else {
         signatorySection.classList.remove('hidden');
     }
@@ -318,11 +320,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Organization input
         if (action.includes('received')) {
             orgWrapper.classList.remove('hidden');
+            department.classList.add('hidden');
         } else {
             orgWrapper.classList.add('hidden');
+            department.classList.remove('hidden');
         }
-
-        
+  
     }
     function syncDocumentType() {
             const action = actionTypeSelect.value;
@@ -406,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // ATTACHMENT VALIDATION
         if (mode === 'attachment') {
+           
             if (!attachmentInput || attachmentInput.files.length === 0) {
                 toastr.error('Please upload a PDF file');
                 return;
