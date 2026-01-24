@@ -48,33 +48,33 @@
  {{-- FORM Live AJAX ref_no check --}}
     <form method="POST" action="{{ route('notices.store') }}"  enctype="multipart/form-data" class="space-y-6" id="create-notice-form">
         @csrf
-               <div class="mt-6 card">
-      <h3 class="card-title">Document Type</h3>
+    <div class="mt-6 card">
+                  <h3 class="card-title">Document Type</h3>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-        <div>
-            <label class="label">Action Type</label>
-            <select name="action_type" id="actionType" class="input" required>
-                <!-- Draft mode options -->
-                <option value="" selected>Seelct Type </option>
-                <option value="notice_issued">Notice Issued</option>
-                <option value="circular_issued">Circular Issued</option>
+            <div>
+                <label class="label">Action Type</label>
+                <select name="action_type" id="actionType" class="input" required>
+                    <!-- Draft mode options -->
+                    <option value="" selected>Seelct Type </option>
+                    <option value="notice_issued">Notice Issued</option>
+                    <option value="circular_issued">Circular Issued</option>
 
-                <!-- Attachment mode options -->
-                <option value="notice_received" class="attach-only hidden">Notice Received</option>
-                <option value="circular_received" class="attach-only hidden">Circular Received</option>
-            </select>
-        </div>
+                    <!-- Attachment mode options -->
+                    <option value="notice_received" class="attach-only hidden">Notice Received</option>
+                    <option value="circular_received" class="attach-only hidden">Circular Received</option>
+                </select>
+            </div>
 
-        <div id="organizationWrapper" class="hidden">
-            <label class="label">Organization Name</label>
-            <input type="text" name="organization_name" class="input"
-                placeholder="Enter Organization Name" value="D S Computer">
-        </div>
+                <div id="organizationWrapper" class="hidden">
+                    <label class="label">Organization Name</label>
+                    <input type="text" name="organization_name" class="input"
+                        placeholder="Enter Organization Name" value="D S Computer">
+                </div>
 
             </div>
-        </div>
+    </div>
 
 
 
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (mode === 'draft') {
             actionTypeSelect.value = 'notice_issued';
         } else {
-            actionTypeSelect.value = 'notice_received';
+            actionTypeSelect.value = '';
         }
 
         handleActionVisibility();

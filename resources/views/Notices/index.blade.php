@@ -573,6 +573,33 @@ $(document).on('click', '#noticesTable tbody tr', function (e) {
         window.location.href = url;
     }
 });
+function generateShare(id) {
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute('content');
+
+    fetch(`/notices/${id}/share`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Request failed');
+        return res.json();
+    })
+    .then(data => {
+        navigator.clipboard.writeText(data.share_url);
+        toastr.success('Share link copied (valid for 24 hours)');
+    })
+    .catch(() => {
+        toastr.error('Failed to generate share link');
+    });
+}
+
+
 
 </script>
 @endpush

@@ -17,4 +17,9 @@ class UserOrganization extends Model
         'Stau_UIN',
         'Expy'
     ];
+    public function organization()
+    {
+        return $this->belongsTo(OrganizationMaster::class, 'Orga_UIN', 'Orga_UIN');
+    }
+
 }

@@ -22,6 +22,20 @@
     @endif
 
 </div>
+ <div class="flex gap-3">
+        <button onclick="window.print()"
+                class="px-4 py-2 rounded bg-slate-600 hover:bg-slate-700 text-white text-sm">
+            <i class="bi bi-printer"></i> Print
+        </button>
+
+        @if ($notice->Atch_Path)
+            <a href="{{ asset('storage/'.$notice->Atch_Path) }}"
+               download
+               class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                <i class="bi bi-download"></i> Download
+            </a>
+        @endif
+</div>
 
 <div class="flex justify-center py-10 ">
 

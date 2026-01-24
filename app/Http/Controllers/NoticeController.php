@@ -154,6 +154,12 @@ class NoticeController extends Controller
                                     <i class="bi bi-eye"></i>
                                     Update
                                 </a>
+                                 <button
+                                    onclick="generateShare('.$row->Ntic_Crcl_UIN.')"
+                                    class="w-full flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700 cursor-pointer">
+                                    <i class="bi bi-share"></i>
+                                    Share (24h)
+                                </button>
                             </div>
                         </div>
                         ';
@@ -340,6 +346,7 @@ class NoticeController extends Controller
             return view('notices.show', compact('notice'));
         }
         public function edit(AdmnTranNticCrcl $notice){
+            
             return view('notices.edit', compact('notice'));
         }
         public function updateStatus(Request $request, AdmnTranNticCrcl $notice)
@@ -426,14 +433,23 @@ class NoticeController extends Controller
                 $notice->Athr_Pers_Name     = $validated['authorized_person_name'] ?? null;
                 $notice->Dsig =$validated['designation'] ?? null;
                 /* ================= CONTENT / ATTACHMENT ================= */
-                if ($validated['mode'] === 'attachment') {
+              
+                if ($request->mode === 'attachment') {
 
-                    // remove editor content
-                    $notice->Cntn = null;
+                    // Case 1: User clicked "Remove attachment"
+                    if ($request->input('remove_attachment') == 1) {
 
+                        if ($notice->Atch_Path && Storage::disk('public')->exists($notice->Atch_Path)) {
+                            Storage::disk('public')->delete($notice->Atch_Path);
+                        }
+
+                        $notice->Atch_Path = null;
+                    }
+
+                    // Case 2: User uploaded a new attachment (replace or fresh)
                     if ($request->hasFile('attachment')) {
 
-                        // delete old attachment
+                        // Delete old file if exists
                         if ($notice->Atch_Path && Storage::disk('public')->exists($notice->Atch_Path)) {
                             Storage::disk('public')->delete($notice->Atch_Path);
                         }
@@ -444,10 +460,14 @@ class NoticeController extends Controller
                             ->storeAs('notices/attachments', $filename, 'public');
                     }
 
+                    // Attachment mode never keeps content
+                    $notice->Cntn = null;
+
                 } else {
-                    // Draft mode
+                    // Draft mode (text)
                     $notice->Cntn = $validated['content'];
                 }
+
 
                 /* ================= SIGNATURE IMAGE ================= */
                 if ($request->hasFile('signature_image')) {

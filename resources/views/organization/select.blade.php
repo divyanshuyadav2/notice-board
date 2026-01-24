@@ -81,7 +81,7 @@
                     <div class="w-full">
                         <select id="organization-select">
                             <option value="">-- Select Organization --</option>
-                            @foreach($organizations as $org)
+                           @foreach($organizations as $org)
                                 <option value="{{ $org->Orga_UIN }}">
                                     {{ $org->Orga_Name }}
                                 </option>
@@ -92,5 +92,22 @@
             </div>
         </div>
     </main>
+
+ <script>
+    $(document).ready(function() {
+        $('#organization-select').on('change', function() {
+            var orgUin = $(this).val();
+            
+            console.log('Selected Organization:', orgUin); // Debug
+            
+            if (orgUin) {
+                // Simple redirect to test
+                var url = '{{ route("organization.store") }}?organization_uin=' + orgUin;
+                console.log('Redirecting to:', url); // Debug
+                window.location.href = url;
+            }
+        });
+    });
+</script> 
 </body>
 </html>
