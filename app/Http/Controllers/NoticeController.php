@@ -158,7 +158,7 @@ class NoticeController extends Controller
                                     onclick="generateShare('.$row->Ntic_Crcl_UIN.')"
                                     class="w-full flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700 cursor-pointer">
                                     <i class="bi bi-share"></i>
-                                    Share (24h)
+                                    Share (30D)
                                 </button>
                             </div>
                         </div>

@@ -592,7 +592,7 @@ function generateShare(id) {
     })
     .then(data => {
         navigator.clipboard.writeText(data.share_url);
-        toastr.success('Share link copied (valid for 24 hours)');
+        toastr.success('Share link copied (valid for 30 days)');
     })
     .catch(() => {
         toastr.error('Failed to generate share link');

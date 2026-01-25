@@ -16,7 +16,7 @@ class ShareControlller extends Controller
         $share = AdmnTranNticShare::create([
             'Ntic_Crcl_UIN' => $notice->Ntic_Crcl_UIN,
             'Share_Token'   => Str::uuid(),
-            'Expires_At'    => now()->addHours(24),
+            'Expires_At'    => now()->addDays(30),
             'Created_By'    => session('User_UIN'),
             'Created_IP'    => request()->ip(),
         ]);
