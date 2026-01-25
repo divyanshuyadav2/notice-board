@@ -70,7 +70,7 @@
                 <div id="organizationWrapper" class="hidden">
                     <label class="label">Organization Name</label>
                     <input type="text" name="organization_name" class="input"
-                        placeholder="Enter Organization Name" value="D S Computer">
+                        placeholder="Enter Organization Name" value={{ session('org_name') }}>
                 </div>
 
             </div>

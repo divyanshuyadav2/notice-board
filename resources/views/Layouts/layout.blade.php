@@ -48,14 +48,14 @@
         {{-- LEFT --}}
         <div class="flex flex-col leading-tight">
             <h1 class="text-lg font-semibold text-white">
-                D S Computer Center
+                {{ session('org_name') }}
             </h1>
 
-            @auth
+          
                 <span class="text-xs text-gray-400">
-                    {{ auth()->user()->name }}
+                     {{ session('user_data.User_Name') }}
                 </span>
-            @endauth
+           
         </div>
 
         {{-- RIGHT MENU BUTTON --}}
