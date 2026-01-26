@@ -70,7 +70,7 @@
                 <div id="organizationWrapper" class="hidden">
                     <label class="label">Organization Name</label>
                     <input type="text" name="organization_name" class="input"
-                        placeholder="Enter Organization Name" value={{ session('org_name') }}>
+                        placeholder="Enter Organization Name" value="{{ session('org_name') }}">
                 </div>
 
             </div>
@@ -191,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 items: [
                     'heading','|',
                     'bold','italic','underline','strikethrough','removeFormat','|',
+                    'subscript','superscript',
                     'fontSize','fontFamily','fontColor','fontBackgroundColor','highlight','|',
                     'alignment','|',
                     'bulletedList','numberedList','todoList','|',

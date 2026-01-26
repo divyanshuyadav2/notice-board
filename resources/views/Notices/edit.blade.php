@@ -275,6 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 items: [
                     'heading','|',
                     'bold','italic','underline','strikethrough','removeFormat','|',
+                    'subscript','superscript',
                     'fontSize','fontFamily','fontColor','fontBackgroundColor','highlight','|',
                     'alignment','|',
                     'bulletedList','numberedList','todoList','|',

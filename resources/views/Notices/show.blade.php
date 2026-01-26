@@ -123,9 +123,9 @@
                 </div>
 
                 {{-- ================= FOOTER ================= --}}
-                <div class="mt-6 pt-4 text-center text-xs">
-                    <hr class="border-black mb-2">
-                </div>
+                  <div class="footer-line-wrapper mt-4">
+                        <div class="footer-line"></div>
+                 </div>
             </div>
         </div>
     </div>
