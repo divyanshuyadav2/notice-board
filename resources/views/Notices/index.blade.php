@@ -50,9 +50,9 @@
                     <tr>
                         
                         <th class="px-4 py-3">Description</th>
-                        <th class="px-4 py-3">Authorised Person</th>
                         <th class="px-4 py-3">Organization Name</th>
-                        <th class="px-4 py-3">Effective /Published Date</th>
+                        <th class="px-4 py-3">Effective/Published Date</th>
+                        <th class="px-4 py-3">Authorised Person</th>
                         <th class="px-4 py-3 text-right"></th>
                     </tr>
                 </thead>
@@ -380,11 +380,6 @@ $(document).ready(function () {
                 },
 
                 {
-                    data: 'Athr_Pers_Name',             
-                    searchable: true
-                },
-
-                {
                     data: 'Orga_Name',         // Badge (Notice / Circular)
                     name: 'Orga_Name',
                     orderable: false,
@@ -394,6 +389,11 @@ $(document).ready(function () {
                 {
                     data: 'date',                  // Formatted date
                     name: 'Ntic_Crcl_Dt'
+                },
+                
+                {
+                    data: 'Athr_Pers_Name',             
+                    searchable: true
                 },
 
                 {

@@ -1,6 +1,6 @@
 @extends('layouts.layout')
 
-@section('title', 'Create Notice')
+@section('title', 'Add')
 
 @section('content')
 <div class="max-w-5xl mx-auto text-gray-200">
@@ -29,7 +29,7 @@
     {{-- PAGE HEADER --}}
     <div class="flex items-center gap-3 mb-6">
         <a href="{{ route('notices.index') }}" class="text-cyan-400 text-xl">←</a>
-        <h2 class="text-2xl font-semibold text-white">Create</h2>
+        <h2 class="text-2xl font-semibold text-white">Add</h2>
     </div>
 
     {{-- MODE SWITCH --}}

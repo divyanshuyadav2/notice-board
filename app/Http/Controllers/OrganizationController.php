@@ -26,27 +26,32 @@ class OrganizationController extends Controller
     }
 
 
-        public function store(Request $request)
-{
-    $orgUin = $request->get('organization_uin');
-        // Option 1: Get just the value (recommended for single column)
-    $orgName = OrganizationMaster::where('Orga_UIN', $orgUin)->value('Orga_Name');
+    public function store(Request $request)
+    {
+        $request->validate([
+            'organization_uin' => 'required|integer'
+        ]);
 
-  
-    
-    if ($orgUin) {
+        $orgUin  = $request->organization_uin;
+        $orgName = OrganizationMaster::where('Orga_UIN', $orgUin)->value('Orga_Name');
+
         session([
             'organization_uin' => $orgUin,
-            'org_name'=>$orgName
-            ]);
+            'org_name'         => $orgName,
+        ]);
+
         session()->save();
-        
-       
+
+        // 🔹 If AJAX (modal switch)
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true
+            ]);
+        }
+
+        // 🔹 Normal flow (first-time selection)
         return redirect()->route('notices.index');
     }
-    
-    \Log::info('No Organization UIN provided');
-    return redirect()->route('organization.select')->with('error', 'Please select an organization');
-    }
+
 }
 

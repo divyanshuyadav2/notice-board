@@ -34,7 +34,7 @@ class NoticeController extends Controller
                 'Athr_Pers_Name',
                 'Pbli_On',
                 'Ref_No'
-            ])->orderBy('Ntic_Crcl_Dt', 'desc');
+            ])->orderBy('Eft_Dt', 'desc');
 
             return DataTables::of($query)
                 ->addIndexColumn()
@@ -45,9 +45,21 @@ class NoticeController extends Controller
                     $initial = strtoupper(substr($row->Docu_Type, 0, 1));
                     $bgclass=$row->Docu_Type === 'circular'? 'bg-green-600': 'bg-yellow-500';
                     // Draft / Published dot
+                    $isPublished=$row->Stau==='published';
+                    if( $isPublished){
+                      $subjectHtml='<a href="'.route('notices.show', $row->Ntic_Crcl_UIN).'">  
+                                    <span class="text-white font-medium">
+                                        '.$row->Subj.'
+                                    </span>';
+                    }
+                    else{
+                      $subjectHtml='<span class="text-white font-medium">
+                                        '.$row->Subj.'
+                                    </span>';
+                    }
                     $dotColor = $row->Stau === 'draft'
                         ?'bg-yellow-400':'';
-
+                   
                     return '
                         <div  class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full '.$bgclass.'
@@ -58,10 +70,8 @@ class NoticeController extends Controller
 
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-white font-medium">
-                                        '.$row->Subj.'
-                                    </span>
-
+                                 '. $subjectHtml.'
+                                 </a>
                                     <span class="w-2 h-2 rounded-full '.$dotColor.'"></span>
                                 </div>
 
@@ -83,7 +93,7 @@ class NoticeController extends Controller
                         '.$row->Athr_Pers_Name.'
                         </div>
                         
-                        <div class="text-white text-xs rounded">
+                        <div class="text-gray-400 text-xs rounded">
                          '.ucfirst($row->Dept).'
                         </div>
                     </div>
@@ -96,9 +106,11 @@ class NoticeController extends Controller
                    
 
                     return '
-                        <span class="px-3 py-1 text-xs rounded">
+                    <div class="flex text-left">
+                        <span class=" text-xs rounded">
                             '.ucfirst($row->Orga_Name).'
                         </span>
+                    </div>
                     ';
                 })
 
@@ -128,12 +140,13 @@ class NoticeController extends Controller
 
                 /* ================= ACTION ================= */
                 ->addColumn('action', function ($row) {
-
+                      $checkStatus=$row->Stau === 'draft'?'Publish':'Move to Draft';
+                      $checkEdit=$row->Stau === 'published'?'hidden':'flex';
                         return '
                         <div class="relative inline-block text-left">
 
                             <button 
-                                class="action-btn text-gray-400 hover:text-white focus:outline-none"
+                                class="action-btn text-gray-400 hover:text-white focus:outline-none cursor-pointer"
                                 data-id="'.$row->Ntic_Crcl_UIN.'"
                             >
                                 ⋮
@@ -144,7 +157,7 @@ class NoticeController extends Controller
                                         shadow-lg z-50" style="background-color: #0d2942;">
 
                                 <a href="'.route('notices.edit', $row->Ntic_Crcl_UIN).'"
-                                class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
+                                   class="'.$checkEdit.' items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
                                     <i class="bi bi-pencil"></i>
                                     Edit
                                 </a>
@@ -152,25 +165,19 @@ class NoticeController extends Controller
                                 <a href="'.route('notices.publish', $row->Ntic_Crcl_UIN).'"
                                 class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
                                     <i class="bi bi-eye"></i>
-                                    Update
+                                    '.$checkStatus.'
                                 </a>
                                  <button
                                     onclick="generateShare('.$row->Ntic_Crcl_UIN.')"
                                     class="w-full flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700 cursor-pointer">
                                     <i class="bi bi-share"></i>
-                                    Share (30D)
+                                    Share 
                                 </button>
                             </div>
                         </div>
                         ';
                     })
 
-                ->setRowAttr([
-                        'data-href' => function ($row) {
-                            return route('notices.show', $row->Ntic_Crcl_UIN);
-                        },
-                        'class' => 'cursor-pointer'
-                    ])
                 ->rawColumns(['title','Athr_Pers_Name', 'Orga_Name','date', 'action'])
                 ->make(true);
         }

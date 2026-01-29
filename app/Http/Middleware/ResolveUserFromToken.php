@@ -27,8 +27,7 @@ class ResolveUserFromToken
         // }
         $token=session('token');
         if(app()->environment('local') && ! $token){
-            $token='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L3BhcnRha2VkaWdpdGFsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdC9wYXJ0YWtlZGlnaXRhbCIsImlhdCI6MTc2OTEwNjA2OSwiYWNjZXNzX3Rva2VuIjoiMmUwMTg4NGEyZGZmNGI3NWY5MjM5MDViNzIwYTBjIiwiVXNlcl9VSU4iOiIxNTAwMDAwMDAxIn0.OcCpPa7cXSgTDsgi1ZKYoAjq39Z4WtL8d-0qzQOiH5g';
-            }
+          $token='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L3BhcnRha2VkaWdpdGFsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdC9wYXJ0YWtlZGlnaXRhbCIsImlhdCI6MTc2OTY2NTI4NiwiYWNjZXNzX3Rva2VuIjoiZDVlNjhiNjU4YjliNWFmNzVhOWUwYmZlNDdjY2U4IiwiVXNlcl9VSU4iOiIxNzY2MDYxNTcyIn0.Lj5kHXa96oepBF_MPUQeoFV0PQr1WzMSIt8Ajk7PDlM';}
         if(!$token){
             return response()->view('errors.sessionexpires',[],401);
         }
