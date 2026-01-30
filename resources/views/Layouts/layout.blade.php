@@ -38,6 +38,16 @@
 
     <!-- Page-specific styles -->
     @stack('styles')
+    <style>
+    .blur-background {
+        filter: blur(4px);
+        transition: filter 0.2s ease;
+    }
+    .no-scroll {
+        overflow: hidden;
+    }
+    </style>
+
 </head>
 
 <body class="font-sans antialiased bg-[#021420] text-gray-200 min-h-screen flex flex-col">
@@ -128,7 +138,7 @@
 
 
     {{-- Main Content --}}
-    <main class="flex-1">
+    <main class="flex-1" id="pageContent">
         <div class="max-w-7xl mx-auto px-8 py-4">
             @yield('content')
         </div>
@@ -150,8 +160,9 @@
          id="closeOrgModal"></div>
 
     <!-- Modal Box -->
-    <div class="relative w-full max-w-md rounded-xl bg-[#1b2b3f]
-                border border-[#294a63] shadow-xl p-6">
+    <div class="relative   rounded-xl bg-[#1b2b3f]
+                border border-[#294a63] shadow-xl p-6" style="width:40%; --tw-bg-opacity: 1; background-color: rgb(30 41 59 / var(--tw-bg-opacity, 1));
+">
 
         <h3 class="text-lg font-semibold text-white mb-4">
             Select Organization
@@ -216,26 +227,30 @@ menuBack.addEventListener('click', () => {
     menuDropdown.classList.add('hidden');
     menuOverlay.classList.add('hidden');
 });
-        });
-    </script>
-          <script>
-document.addEventListener('DOMContentLoaded', () => {
+        
 
     const modal = document.getElementById('orgModal');
     const openBtn = document.getElementById('openOrgModal');
     const closeBtn = document.getElementById('closeOrgModal');
     const form = document.getElementById('orgSwitchForm');
-
+    const pageContent = document.getElementById('pageContent');
     /* ================= OPEN MODAL ================= */
     openBtn?.addEventListener('click', () => {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        menuDropdown.classList.add('hidden');
+        // blur background + stop scroll
+         pageContent.classList.add('blur-background');
+         document.body.classList.add('no-scroll');
     });
 
     /* ================= CLOSE MODAL ================= */
     function closeModal() {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+         // remove blur + restore scroll
+       pageContent.classList.remove('blur-background');
+      document.body.classList.remove('no-scroll');
     }
 
     closeBtn?.addEventListener('click', closeModal);
@@ -250,21 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape') closeModal();
     });
 
-    document.getElementById('switchOrgBtn')?.addEventListener('click', () => {
 
-        const orgUin = document.querySelector(
-            'input[name="organization_uin"]:checked'
-        )?.value;
-
-        if (!orgUin) {
-            toastr.error('Please select an organization');
-            return;
-        }
-
-        window.location.href =
-            "{{ route('organization.store') }}" +
-            "?organization_uin=" + encodeURIComponent(orgUin);
-    });
 
     
    
