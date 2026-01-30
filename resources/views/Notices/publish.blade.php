@@ -3,23 +3,7 @@
 @section('title', 'Publish Doc')
 
 @section('content')
-<div class="flex justify-end mb-6 gap-3">
-    @if ($notice->Stau === 'draft')
-        <button
-            onclick="confirmStatusChange({{ $notice->Ntic_Crcl_UIN }}, 'published')"
-            class="bg-green-600 hover:bg-green-700 text-white
-                   px-5 py-2 rounded font-semibold shadow">
-            Publish 
-        </button>
-    @else
-        <button
-            onclick="confirmStatusChange({{ $notice->Ntic_Crcl_UIN }}, 'draft')"
-            class="bg-yellow-500 hover:bg-yellow-600 text-black
-                   px-5 py-2 rounded font-semibold shadow">
-            Move to Draft
-        </button>
-    @endif
-</div>
+
 
 <div class="flex justify-center py-10">
     {{-- ================= ATTACHMENT MODE ================= --}}
@@ -125,7 +109,30 @@
         </div>
     @endif
 </div>
-
+<div class="flex justify-end mb-6 gap-3">
+    @if ($notice->Stau === 'draft')
+        <button
+            onclick="confirmStatusChange({{ $notice->Ntic_Crcl_UIN }}, 'published')"
+            class="bg-green-600 hover:bg-green-700 text-white
+                   px-5 py-2 rounded font-semibold shadow">
+            Publish 
+        </button>
+    @else
+        <button
+            onclick="confirmStatusChange({{ $notice->Ntic_Crcl_UIN }}, 'draft')"
+            class="bg-yellow-500 hover:bg-yellow-600 text-black
+                   px-5 py-2 rounded font-semibold shadow">
+            Move to Draft
+        </button>
+    @endif
+     @if ($notice->Stau === 'draft')
+  <a href="{{ route('notices.edit', $notice->Ntic_Crcl_UIN) }}"
+    class="bg-blue-600 hover:bg-blue-700 text-white
+            px-5 py-2 rounded font-semibold shadow">
+        Edit
+    </a>
+    @endif
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>

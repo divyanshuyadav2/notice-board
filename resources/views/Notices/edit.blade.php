@@ -82,6 +82,7 @@
                 </option>
 
                 {{-- Attachment mode --}}
+                @if($notice->mode==='attachment')
                 <option value="notice_received"
                     class="attach-only"
                     {{ $notice->Action_Type === 'notice_received' ? 'selected' : '' }}>
@@ -93,6 +94,7 @@
                     {{ $notice->Action_Type === 'circular_received' ? 'selected' : '' }}>
                     Circular Received
                 </option>
+                @endif
             </select>
         </div>
 
@@ -230,31 +232,82 @@
 
 
 
-    {{-- SIGNATORY (DRAFT ONLY) --}}
-    @if ($notice->mode === 'draft')
-    <div class="card">
-        <h3 class="card-title">Authorized Signatory</h3>
+{{-- SIGNATORY (DRAFT ONLY) --}}
+@if ($notice->mode === 'draft')
+<div class="card">
+    <h3 class="card-title">Authorized Signatory</h3>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {{-- EXISTING SIGNATURE --}}
+    @if ($notice->Imgs_Sgnt)
+     
+        <div id="existingSignature"
+             class="flex items-center justify-between
+                    bg-[#0f1f2d] border border-blue-700
+                    text-blue-400 rounded-lg px-4 py-3 mb-4">
+
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('storage/'.$notice->Imgs_Sgnt) }}"
+                     alt="Signature"
+                     class="h-10 w-auto border rounded bg-white cursor-pointer"
+                     onclick="window.open(this.src, '_blank')">
+
+                <div class="flex flex-col text-sm">
+                    <span class="font-semibold text-blue-300">
+                        {{ $notice->Athr_Pers_Name }}
+                    </span>
+                    <span class="text-xs text-blue-400">
+                        {{ $notice->Dsig }}
+                    </span>
+                </div>
+            </div>
+
+            <button type="button"
+                    id="removeSignatureBtn"
+                    class="text-blue-400 hover:text-red-400 text-xl font-bold">
+                ×
+            </button>
+        </div>
+
+        <input type="hidden" name="remove_signature" id="removeSignatureInput" value="0">
+    @endif
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        {{-- FILE INPUT (HIDDEN ONLY IF SIGNATURE EXISTS) --}}
+        <div id="signatureInputWrapper"
+             class="{{ $notice->Imgs_Sgnt ? 'hidden' : '' }}">
+            <label class="label">Signature Image</label>
             <input type="file"
                    name="signature_image"
                    accept="image/png,image/jpeg,image/jpg"
                    class="input">
+        </div>
 
+        {{-- NAME (ALWAYS VISIBLE) --}}
+        <div>
+            <label class="label">Authorized Person Name</label>
             <input type="text"
                    name="authorized_person_name"
                    class="input"
-                   value="{{ $notice->Athr_Pers_Name }}"
+                   value="{{ old('authorized_person_name', $notice->Athr_Pers_Name) }}"
                    placeholder="Authorized Person Name">
+        </div>
 
+        {{-- DESIGNATION (FULL WIDTH) --}}
+        <div >
+            <label class="label">Designation</label>
             <input type="text"
                    name="designation"
                    class="input"
-                   value="{{ $notice->Dsig }}"
+                   value="{{ old('designation', $notice->Dsig) }}"
                    placeholder="Designation">
         </div>
+
     </div>
-    @endif
+</div>
+@endif
+
+
 
     {{-- ACTIONS --}}
     <div class="flex justify-end">
@@ -475,6 +528,23 @@ document.addEventListener('DOMContentLoaded', function () {
             fileWrapper.classList.remove('hidden');
         });
     }
+        const removeSigBtn = document.getElementById('removeSignatureBtn');
+    const existingSigBox = document.getElementById('existingSignature');
+    const removeSigInput = document.getElementById('removeSignatureInput');
+    const sigInputWrapper = document.getElementById('signatureInputWrapper');
+
+    if (removeSigBtn) {
+        removeSigBtn.addEventListener('click', () => {
+
+            if (!confirm('Remove existing signature?')) return;
+
+            removeSigInput.value = 1;
+
+            existingSigBox.remove();          // remove preview
+            sigInputWrapper.classList.remove('hidden'); // show file input
+        });
+    }
+
 
 });
 </script>

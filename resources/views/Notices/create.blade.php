@@ -52,7 +52,7 @@
                   <h3 class="card-title">Document Type</h3>
 
        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
+      <input type="text" name="Orga_UIN" class="hidden" value="{{ session('organization_uin') }}">
             <div>
                 <label class="label">Action Type</label>
                 <select name="action_type" id="actionType" class="input" required>

@@ -20,20 +20,26 @@
           
         </div>
 
-        {{-- ADD BUTTON --}}
-        <a href="{{ route('notices.create') }}"
-           class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700
-                  text-white font-semibold px-4 py-2 rounded transition">
-            <i class="bi bi-plus-circle"></i>
-            <span>Add </span>
-        </a>
+        {{-- SEARCH TOGGLE & ADD BUTTON --}}
+        <div class="flex items-center gap-3">
+            <button class="search-toggle-btn" id="searchToggle" title="Toggle Search">
+                <i class="bi bi-search"></i>
+            </button>
+            
+            <a href="{{ route('notices.create') }}"
+               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700
+                      text-white font-semibold px-4 py-2 rounded transition">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add </span>
+            </a>
+        </div>
     </div>
 
     {{-- DATATABLE CONTAINER --}}
     <div class="bg-[#021420] rounded-lg overflow-hidden">
         
-        {{-- SEARCH ROW (Full Width) --}}
-       <div id="searchRow" class="px-4 py-2 bg-[#021420] border-b border-[#1a3647]">
+        {{-- SEARCH ROW (Full Width - Toggleable) --}}
+       <div id="searchRow" class="px-4 py-2 bg-[#021420] border-b border-[#1a3647] hidden">
             <!-- DataTables will inject search box here -->
         </div>
 
@@ -62,9 +68,9 @@
             </table>
         </div>
 
-        {{-- BOTTOM ROW (Show entries + Pagination) --}}
-        <div id="bottomRow" class="p-4 bg-[#0a1e2e] border-t border-[#1a3647]">
-            <!-- DataTables info will go here -->
+        {{-- BOTTOM ROW (Info + Pagination) --}}
+        <div id="bottomRow" class="p-4 bg-[#0a1e2e] border-t border-[#1a3647] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <!-- DataTables info and pagination will go here -->
         </div>
     </div>
 
@@ -93,12 +99,27 @@
 }
 
 /* ---------------------------------------------------------
-   SEARCH BAR (TOP)
+   SEARCH BAR (TOP - TOGGLEABLE)
 --------------------------------------------------------- */
 #searchRow {
     display: flex;
     align-items: center;
     gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+#searchRow.hidden {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    border: none;
+}
+
+#searchRow.show {
+    max-height: 100px;
+    padding: 0.5rem 1rem;
+    opacity: 1;
 }
 
 #searchRow .search-container {
@@ -118,7 +139,7 @@
 
 #searchRow input[type="search"] {
     width: 100%;
-    height: 35px;
+    height: 45px;
     background: #1b3444 !important;
     border: 1px solid #284e63 !important;
     color: #e5f1f8 !important;
@@ -138,11 +159,11 @@
     box-shadow: 0 0 0 3px rgba(59,130,246,.15);
 }
 
-/* FILTER BUTTON */
-#searchRow .filter-btn {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
+/* SEARCH TOGGLE BUTTON */
+.search-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     background: #1b3444;
     border: 1px solid #284e63;
     color: #9fb8c8;
@@ -153,13 +174,19 @@
     transition: all .2s;
 }
 
-#searchRow .filter-btn:hover {
+.search-toggle-btn:hover {
     background: #25485c;
     color: #ffffff;
 }
 
+.search-toggle-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
 /* ---------------------------------------------------------
-   TOP CONTROLS (SHOW + PAGINATION)
+   TOP CONTROLS (SHOW + SEARCH TOGGLE)
 --------------------------------------------------------- */
 #topControlsRow {
     display: flex;
@@ -317,7 +344,7 @@ table.dataTable tbody td {
 }
 
 /* ---------------------------------------------------------
-   RESPONSIVE
+   MOBILE CARD VIEW
 --------------------------------------------------------- */
 @media (max-width: 768px) {
     #searchRow {
@@ -328,14 +355,190 @@ table.dataTable tbody td {
         justify-content: center;
     }
 
+    /* Hide table header */
     table.dataTable thead {
         display: none;
     }
+
+    /* Make table rows display as cards */
+    table.dataTable tbody tr {
+        display: block;
+        background: #0f2535;
+        border: 1px solid #1a3647;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        padding: 1.25rem;
+        position: relative;
+    }
+
+    table.dataTable tbody tr:hover {
+        background: #132d42;
+        border-color: #2a556b;
+    }
+
+    table.dataTable tbody td {
+        display: block;
+        padding: 0;
+        border: none;
+        text-align: left !important;
+    }
+
+    /* Title with Avatar - First Column */
+    table.dataTable tbody td:nth-child(1) {
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid #1a3647;
+    }
+
+    /* Fix avatar to prevent stretching */
+    table.dataTable tbody td:nth-child(1) > div {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    /* Ensure avatar stays circular */
+    table.dataTable tbody td:nth-child(1) .w-10.h-10,
+    table.dataTable tbody td:nth-child(1) > div > div:first-child {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
+        flex-shrink: 0 !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Text content should wrap properly */
+    table.dataTable tbody td:nth-child(1) > div > div:last-child {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    /* Title text styling with ellipsis for long titles - MOBILE ONLY */
+    table.dataTable tbody td:nth-child(1) .text-white.font-medium,
+    table.dataTable tbody td:nth-child(1) a .text-white.font-medium {
+        display: block !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        max-width: 100% !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Reference number and other text should also respect container */
+    table.dataTable tbody td:nth-child(1) .text-xs {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Organization Name Section */
+    table.dataTable tbody td:nth-child(2) {
+        padding-top: 0.75rem;
+        padding-bottom: 0.5rem;
+    }
+
+    table.dataTable tbody td:nth-child(2)::before {
+        content: 'ORGANIZATION';
+        display: block;
+        font-size: 0.65rem;
+        color: #4fd1e8;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+    }
+
+    table.dataTable tbody td:nth-child(2) {
+        color: #e5f1f8;
+        font-size: 0.9rem;
+    }
+
+    /* Date - positioned top right */
+    table.dataTable tbody td:nth-child(3) {
+        position: absolute;
+        top: 1.25rem;
+        right: 3.5rem;
+        padding: 0;
+        font-size: 0.7rem;
+        color: #7fa3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        max-width: 80px;
+    }
+
+    table.dataTable tbody td:nth-child(3) .text-sm {
+        font-size: 0.7rem;
+    }
+
+    /* Personal Info Section */
+    table.dataTable tbody td:nth-child(4) {
+        padding-top: 0.75rem;
+        padding-bottom: 0.5rem;
+    }
+
+    table.dataTable tbody td:nth-child(4)::before {
+        content: 'PERSONAL INFO';
+        display: block;
+        font-size: 0.65rem;
+        color: #4fd1e8;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+    }
+
+    /* Action buttons - positioned top right */
+    table.dataTable tbody td:nth-child(5) {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0;
+    }
 }
+
 @media (max-width: 480px) {
-    #topControlsRow {
+    #topControlsRow, #bottomRow {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    table.dataTable tbody tr {
+        padding: 1rem;
+    }
+
+    /* Adjust date position on smaller screens */
+    table.dataTable tbody td:nth-child(3) {
+        right: 2.5rem;
+        font-size: 0.65rem;
+        max-width: 70px;
+    }
+
+    /* Ensure avatar stays exactly 40x40 on small screens */
+    table.dataTable tbody td:nth-child(1) .w-10.h-10,
+    table.dataTable tbody td:nth-child(1) > div > div:first-child {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        max-width: 36px !important;
+        max-height: 36px !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+/* DESKTOP VIEW - NO TRUNCATION */
+@media (min-width: 769px) {
+    table.dataTable tbody td:nth-child(1) .text-white.font-medium {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
     }
 }
 </style>
@@ -357,8 +560,8 @@ $(document).ready(function () {
         serverSide: true,
         responsive: false,
         autoWidth: false,
-        pageLength: 100,
-        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        pageLength: 50,
+        lengthMenu: [[50, 100, 200], [50, 100, 200]],
 
         ajax: {
             url: "{{ route('notices.index') }}",
@@ -369,43 +572,37 @@ $(document).ready(function () {
             }
         },
 
-      columns: [
-              
+        columns: [
+            {
+                data: 'title',                 
+                name: 'Subj',                  
+                orderable: false,
+                searchable: true
+            },
+            {
+                data: 'Orga_Name',
+                name: 'Orga_Name',
+                orderable: false,
+                searchable: true
+            },
+            {
+                data: 'date',
+                name: 'Ntic_Crcl_Dt'
+            },
+            {
+                data: 'Athr_Pers_Name',             
+                searchable: true
+            },
+            {
+                data: 'action',
+                name: 'action',
+                orderable: false,
+                searchable: false,
+                className: 'text-right'
+            }
+        ],
 
-                {
-                    data: 'title',                 
-                    name: 'Subj',                  
-                    orderable: false,
-                    searchable: true
-                },
-
-                {
-                    data: 'Orga_Name',         // Badge (Notice / Circular)
-                    name: 'Orga_Name',
-                    orderable: false,
-                    searchable: true
-                },
-
-                {
-                    data: 'date',                  // Formatted date
-                    name: 'Ntic_Crcl_Dt'
-                },
-                
-                {
-                    data: 'Athr_Pers_Name',             
-                    searchable: true
-                },
-
-                {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-right'
-                }
-            ],
-
-        order: [[4, 'desc']],
+        order: [[2, 'desc']],
 
         // Remove default DOM elements, we'll place them manually
         dom: 'rtip',
@@ -423,7 +620,7 @@ $(document).ready(function () {
         },
 
         initComplete: function() {
-            // Create search box in top row
+            // Create search box in collapsible row
             const searchHtml = `
                 <div class="search-container">
                     <i class="bi bi-search search-icon"></i>
@@ -432,7 +629,6 @@ $(document).ready(function () {
                            placeholder="Search notices/circulars..." 
                            aria-label="Search">
                 </div>
-               
             `;
             $('#searchRow').html(searchHtml);
 
@@ -443,25 +639,36 @@ $(document).ready(function () {
                         <span>Show</span>
                         <select id="customLength">
                             <option value="50" selected>50</option>
-                            <option value="100" >100</option>
-                             <option value="200" >200</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
                         </select>
                     </label>
                 </div>
             `;
             
-            const paginationHtml = `<div class="pagination-container" id="customPagination"></div>`;
+            const paginationHtmlTop = `<div class="pagination-container" id="customPaginationTop"></div>`;
             
-            $('#topControlsRow').html(lengthHtml + paginationHtml);
+            $('#topControlsRow').html(lengthHtml + paginationHtmlTop);
 
-            // Create bottom info row
+            // Create bottom row (Info + Pagination)
             const info = table.page.info();
             const infoHtml = `
                 <div class="info-container" id="customInfo">
                     Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries
                 </div>
             `;
-            $('#bottomRow').html(infoHtml);
+            const paginationHtmlBottom = `<div class="pagination-container" id="customPaginationBottom"></div>`;
+            
+            $('#bottomRow').html(infoHtml + paginationHtmlBottom);
+
+            // Bind search toggle
+            $('#searchToggle').on('click', function() {
+                $(this).toggleClass('active');
+                $('#searchRow').toggleClass('hidden show');
+                if ($('#searchRow').hasClass('show')) {
+                    $('#customSearch').focus();
+                }
+            });
 
             // Bind custom search
             $('#customSearch').on('keyup', function() {
@@ -518,10 +725,12 @@ $(document).ready(function () {
         // Next button
         paginationHtml += `<button class="paginate_button ${currentPage === totalPages - 1 ? 'disabled' : ''}" data-page="${currentPage + 1}">›</button>`;
 
-        $('#customPagination').html(paginationHtml);
+        // Update both pagination containers
+        $('#customPaginationTop').html(paginationHtml);
+        $('#customPaginationBottom').html(paginationHtml);
 
-        // Bind pagination clicks
-        $('#customPagination .paginate_button:not(.disabled):not(.current)').on('click', function() {
+        // Bind pagination clicks for both top and bottom
+        $('#customPaginationTop .paginate_button:not(.disabled):not(.current), #customPaginationBottom .paginate_button:not(.disabled):not(.current)').on('click', function() {
             const page = parseInt($(this).data('page'));
             if (!isNaN(page)) {
                 table.page(page).draw('page');
@@ -544,8 +753,8 @@ $(document).ready(function () {
         $('#successAlert').fadeOut();
     }, 2000);
 });
-document.addEventListener('click', function (e) {
 
+document.addEventListener('click', function (e) {
     // Close all dropdowns first
     document.querySelectorAll('.action-menu').forEach(menu => {
         menu.classList.add('hidden');
@@ -562,6 +771,7 @@ document.addEventListener('click', function (e) {
         menu.classList.toggle('hidden');
     }
 });
+
 $(document).on('click', '#noticesTable tbody tr', function (e) {
     // prevent click when clicking action menu or button
     if ($(e.target).closest('.action-btn, .action-menu, a').length) {
@@ -573,6 +783,7 @@ $(document).on('click', '#noticesTable tbody tr', function (e) {
         window.location.href = url;
     }
 });
+
 function generateShare(id) {
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
@@ -598,8 +809,5 @@ function generateShare(id) {
         toastr.error('Failed to generate share link');
     });
 }
-
-
-
 </script>
 @endpush

@@ -21,10 +21,10 @@
 
 @if($notice->mode === 'draft')
 <div class="flex justify-end gap-3 mb-4 no-print">
-    <button onclick="window.print()"
+    {{-- <button onclick="window.print()"
             class="px-4 py-2 rounded bg-slate-600 hover:bg-slate-700 text-white text-sm">
         <i class="bi bi-printer"></i> Print
-    </button>
+    </button> --}}
 
     <button onclick="downloadNoticeAsPDF()"
             class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">

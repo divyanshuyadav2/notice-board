@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Shared Document</title>
+    <title></title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -141,10 +141,7 @@
 
                     <hr class="border-black mt-12">
 
-                    {{-- FOOTER --}}
-                    <div class="text-center text-xs mt-4">
-                        This document is shared digitally and is system-generated.
-                    </div>
+                    
                 </div>
             </div>
         </div>

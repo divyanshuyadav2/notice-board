@@ -39,7 +39,9 @@ class AdmnTranNticCrcl extends Model
         'Pbli_By',
         'Pbli_On',
         'Ref_No',
-        'Action_Type'
+        'Action_Type',
+         'Orga_UIN',
 
     ];
+ 
 }

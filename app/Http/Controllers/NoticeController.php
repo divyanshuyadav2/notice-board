@@ -18,172 +18,182 @@ class NoticeController extends Controller
      * Show all notices
      */
     public function index(Request $request)
-    {
-        if ($request->ajax()) {
+{
+    if ($request->ajax()) {
 
-            $query = AdmnTranNticCrcl::select([
-                'Ntic_Crcl_UIN',
-                'Subj',
-                'Orga_Name',
-                'Stau',
-                'Ntic_Crcl_Dt',
-                'Mode',
-                'Docu_Type',
-                'Eft_Dt',
-                'Dept',
-                'Athr_Pers_Name',
-                'Pbli_On',
-                'Ref_No'
-            ])->orderBy('Eft_Dt', 'desc');
+        $query = AdmnTranNticCrcl::select([
+            'Ntic_Crcl_UIN',
+            'Subj',
+            'Orga_Name',
+            'Stau',
+            'Ntic_Crcl_Dt',
+            'Mode',
+            'Docu_Type',
+            'Eft_Dt',
+            'Dept',
+            'Athr_Pers_Name',
+            'Pbli_On',
+            'Ref_No'
+        ])->where('Orga_UIN',session('organization_uin'))
+        ->orderBy('Eft_Dt', 'desc');
 
-            return DataTables::of($query)
-                ->addIndexColumn()
+        return DataTables::of($query)
+            ->addIndexColumn()
 
-                /* ================= TITLE COLUMN ================= */
-                ->addColumn('title', function ($row) {
+            /* ================= TITLE COLUMN ================= */
+            ->addColumn('title', function ($row) {
 
-                    $initial = strtoupper(substr($row->Docu_Type, 0, 1));
-                    $bgclass=$row->Docu_Type === 'circular'? 'bg-green-600': 'bg-yellow-500';
-                    // Draft / Published dot
-                    $isPublished=$row->Stau==='published';
-                    if( $isPublished){
-                      $subjectHtml='<a href="'.route('notices.show', $row->Ntic_Crcl_UIN).'">  
-                                    <span class="text-white font-medium">
-                                        '.$row->Subj.'
-                                    </span>';
-                    }
-                    else{
-                      $subjectHtml='<span class="text-white font-medium">
-                                        '.$row->Subj.'
-                                    </span>';
-                    }
-                    $dotColor = $row->Stau === 'draft'
-                        ?'bg-yellow-400':'';
-                   
-                    return '
-                        <div  class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full '.$bgclass.'
-                                        flex items-center justify-center
-                                        text-white font-bold">
-                                '.$initial.'
-                            </div>
+                $initial = strtoupper(substr($row->Docu_Type, 0, 1));
+                $bgclass=$row->Docu_Type === 'circular'? 'bg-green-600': 'bg-yellow-500';
+                
+                // Truncate subject for mobile view
+                $originalSubject = $row->Subj;
+                $truncatedSubject = strlen($originalSubject) > 40
+                    ? substr($originalSubject, 0, 40) . '...' 
+                    : $originalSubject;
+                
+                // Draft / Published dot
+                $isPublished=$row->Stau==='published';
+                if( $isPublished){
+                  $subjectHtml='<a href="'.route('notices.show', $row->Ntic_Crcl_UIN).'">  
+                                <span class="text-white font-medium" title="'.$originalSubject.'">
+                                    '.$truncatedSubject.'
+                                </span>';
+                }
+                else{
+                  $subjectHtml='<span class="text-white font-medium" title="'.$originalSubject.'">
+                                    '.$truncatedSubject.'
+                                </span>';
+                }
+               $statusIcon = $row->Stau === 'draft'
+                ? '<i class="bi bi-pencil-square text-white-400 text-sm" title="Draft"></i>'
+                : '';
 
-                            <div>
-                                <div class="flex items-center gap-2">
-                                 '. $subjectHtml.'
-                                 </a>
-                                    <span class="w-2 h-2 rounded-full '.$dotColor.'"></span>
-                                </div>
-
-                                <div class="flex items-center gap-3 text-xs text-gray-400">
-                                    <span>Ref_No. '.$row->Ref_No.'</span>
-                                
-                                </div>
-                            </div>
-                        </div>
-                    ';
-                })
-                 ->addColumn('Athr_Pers_Name', function ($row) {
-
-                   
-
-                    return '
-                     <div>
-                        <div class="text-white font-medium">
-                        '.$row->Athr_Pers_Name.'
-                        </div>
-                        
-                        <div class="text-gray-400 text-xs rounded">
-                         '.ucfirst($row->Dept).'
-                        </div>
-                    </div>
-                    ';
-                })
-
-                /* ================= DOCUMENT TYPE BADGE ================= */
-                ->addColumn('Orga_Name', function ($row) {
-
-                   
-
-                    return '
-                    <div class="flex text-left">
-                        <span class=" text-xs rounded">
-                            '.ucfirst($row->Orga_Name).'
-                        </span>
-                    </div>
-                    ';
-                })
-
-                /* ================= DATE ================= */
-                ->addColumn('date', function ($row) {
-
-                $effectiveDate = $row->Eft_Dt
-                    ? \Carbon\Carbon::parse($row->Eft_Dt)->format('d M Y')
-                    : '-';
-
-                $publishedDate = $row->Pbli_On
-                    ? \Carbon\Carbon::parse($row->Pbli_On)->format('d M Y')
-                    : '-';
-
+               
                 return '
-                    <div class="text-sm leading-tight">
-                        <div class="text-gray-200">
-                            <span class="font-medium"></span> '.$effectiveDate.'
+                    <div  class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full '.$bgclass.'
+                                    flex items-center justify-center
+                                    text-white font-bold">
+                            '.$initial.'
                         </div>
-                        <div class="text-gray-400 text-xs">
-                            <span class="font-medium"></span> '.$publishedDate.'
+
+                        <div>
+                           <div class="flex items-center gap-2">
+                                '.$subjectHtml.'
+                                '.$statusIcon.'
+                            </div>
+
+                            <div class="flex items-center gap-3 text-xs text-gray-400">
+                                <span>Ref_No. '.$row->Ref_No.'</span>
+                            
+                            </div>
                         </div>
                     </div>
                 ';
             })
+             ->addColumn('Athr_Pers_Name', function ($row) {
+
+               
+
+                return '
+                 <div>
+                    <div class="text-white font-medium">
+                    '.$row->Athr_Pers_Name.'
+                    </div>
+                    
+                    <div class="text-gray-400 text-xs rounded">
+                     '.ucfirst($row->Dept).'
+                    </div>
+                </div>
+                ';
+            })
+
+            /* ================= DOCUMENT TYPE BADGE ================= */
+            ->addColumn('Orga_Name', function ($row) {
+
+               
+
+                return '
+                <div class="flex text-left">
+                    <span class=" text-xs rounded">
+                        '.ucfirst($row->Orga_Name).'
+                    </span>
+                </div>
+                ';
+            })
+
+            /* ================= DATE ================= */
+            ->addColumn('date', function ($row) {
+
+            $effectiveDate = $row->Eft_Dt
+                ? \Carbon\Carbon::parse($row->Eft_Dt)->format('d M Y')
+                : '-';
+
+            $publishedDate = $row->Pbli_On
+                ? \Carbon\Carbon::parse($row->Pbli_On)->format('d M Y')
+                : '-';
+
+            return '
+                <div class="text-sm leading-tight">
+                    <div class="text-gray-200">
+                        <span class="font-medium"></span> '.$effectiveDate.'
+                    </div>
+                    <div class="text-gray-400 text-xs">
+                        <span class="font-medium"></span> '.$publishedDate.'
+                    </div>
+                </div>
+            ';
+        })
 
 
-                /* ================= ACTION ================= */
-                ->addColumn('action', function ($row) {
-                      $checkStatus=$row->Stau === 'draft'?'Publish':'Move to Draft';
-                      $checkEdit=$row->Stau === 'published'?'hidden':'flex';
-                        return '
-                        <div class="relative inline-block text-left">
+            /* ================= ACTION ================= */
+            ->addColumn('action', function ($row) {
+                  $checkStatus=$row->Stau === 'draft'?'Publish':'Move to Draft';
+                  $checkEdit=$row->Stau === 'published'?'hidden':'flex';
+                  $checkShare=$row->Stau === 'draft'?'hidden':'flex';
+                    return '
+                    <div class="relative inline-block text-left">
 
-                            <button 
-                                class="action-btn text-gray-400 hover:text-white focus:outline-none cursor-pointer"
-                                data-id="'.$row->Ntic_Crcl_UIN.'"
-                            >
-                                ⋮
+                        <button 
+                            class="action-btn text-gray-400 hover:text-white focus:outline-none cursor-pointer"
+                            data-id="'.$row->Ntic_Crcl_UIN.'"
+                        >
+                            ⋮
+                        </button>
+
+                        <div class="action-menu hidden absolute right-0 mt-2 w-40  cursor-pointer
+                                    rounded-md 
+                                    shadow-lg z-50" style="background-color: #0d2942;">
+
+                            <a href="'.route('notices.edit', $row->Ntic_Crcl_UIN).'"
+                               class="'.$checkEdit.' items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
+                                <i class="bi bi-pencil"></i>
+                                Edit
+                            </a>
+
+                            <a href="'.route('notices.publish', $row->Ntic_Crcl_UIN).'"
+                            class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
+                                <i class="bi bi-eye"></i>
+                                '.$checkStatus.'
+                            </a>
+                             <button
+                                onclick="generateShare('.$row->Ntic_Crcl_UIN.')"
+                                class="w-full '.$checkShare.' items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700 cursor-pointer">
+                                <i class="bi bi-share"></i>
+                                Share 
                             </button>
-
-                            <div class="action-menu hidden absolute right-0 mt-2 w-40  cursor-pointer
-                                        rounded-md 
-                                        shadow-lg z-50" style="background-color: #0d2942;">
-
-                                <a href="'.route('notices.edit', $row->Ntic_Crcl_UIN).'"
-                                   class="'.$checkEdit.' items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
-                                    <i class="bi bi-pencil"></i>
-                                    Edit
-                                </a>
-
-                                <a href="'.route('notices.publish', $row->Ntic_Crcl_UIN).'"
-                                class="flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700">
-                                    <i class="bi bi-eye"></i>
-                                    '.$checkStatus.'
-                                </a>
-                                 <button
-                                    onclick="generateShare('.$row->Ntic_Crcl_UIN.')"
-                                    class="w-full flex items-center gap-2 px-4 py-2 text-gray-200 hover:bg-slate-700 cursor-pointer">
-                                    <i class="bi bi-share"></i>
-                                    Share 
-                                </button>
-                            </div>
                         </div>
-                        ';
-                    })
+                    </div>
+                    ';
+                })
 
-                ->rawColumns(['title','Athr_Pers_Name', 'Orga_Name','date', 'action'])
-                ->make(true);
-        }
-
-        return view('notices.index');
+            ->rawColumns(['title','Athr_Pers_Name', 'Orga_Name','date', 'action'])
+            ->make(true);
     }
+
+    return view('notices.index');
+}
 
 
     /**
@@ -203,7 +213,7 @@ class NoticeController extends Controller
       
         try {
 
-    //     dd($request);
+       // dd($request);
                 /* ================= VALIDATION ================= */
 
                 $rules = [
@@ -309,19 +319,20 @@ class NoticeController extends Controller
                     'Dept'             => $validated['department'] ?? null,
 
                     /* AUDIT */
-                    'CrBy'             => auth()->id() ?? 1,
+                    'CrBy'             => session('User_UIN'),
                     'CrOn'             => now(),
 
                     'Pbli_By'          => $validated['status'] === 'published'
-                                            ? (auth()->id() ?? 1)
+                                            ? session('User_UIN')
                                             : null,
 
                     'Pbli_On'          => $validated['status'] === 'published'
                                             ? now()
                                             : null,
+                    'Orga_UIN'=>$request['Orga_UIN'],
+                    
                 ]);
-
-
+               
                 return redirect()
                     ->route('notices.index')
                     ->with('success', 'Notice saved successfully.');
@@ -365,13 +376,13 @@ class NoticeController extends Controller
 
             $data = [
                 'Stau'   => $validated['status'],
-                'MoBy'  => auth()->id() ?? 1,
+                'MoBy'  => session('User_UIN') ?? 1,
                 'MoOn'  => now(),
             ];
 
             // If publishing → set published info
             if ($validated['status'] === 'published') {
-                $data['Pbli_By'] = auth()->id() ?? 1;
+                $data['Pbli_By'] = session('User_UIN') ?? 1;
                 $data['Pbli_On'] = now();
             }
 
@@ -477,18 +488,22 @@ class NoticeController extends Controller
 
 
                 /* ================= SIGNATURE IMAGE ================= */
-                if ($request->hasFile('signature_image')) {
+              if ($request->hasFile('signature_image')) {
 
+                    // delete old signature if exists
                     if ($notice->Imgs_Sgnt && Storage::disk('public')->exists($notice->Imgs_Sgnt)) {
                         Storage::disk('public')->delete($notice->Imgs_Sgnt);
                     }
 
                     $notice->Imgs_Sgnt = $request->file('signature_image')
                         ->store('notices/signatures', 'public');
-                }
+
+                    
+            }
+
 
                 /* ================= AUDIT ================= */
-                $notice->MoBy = auth()->id() ?? 1;
+                $notice->MoBy = session('User_UIN') ?? 1;
                 $notice->MoOn = now();
 
                 $notice->save();

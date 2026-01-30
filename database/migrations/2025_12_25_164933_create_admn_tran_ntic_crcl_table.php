@@ -52,11 +52,12 @@ return new class extends Migration
             $table->index('Ntic_Crcl_Dt'); 
 
             $table->enum('Action_Type', [
-        'notice_issued',
-        'notice_received',
-        'circular_issued',
-        'circular_received'
-       ]);
+            'notice_issued',
+            'notice_received',
+            'circular_issued',
+            'circular_received'
+            ]);
+            $table->unsignedInteger('Orga_UIN');
 
   
             });
