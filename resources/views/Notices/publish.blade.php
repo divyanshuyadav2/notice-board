@@ -4,7 +4,10 @@
 
 @section('content')
 
-
+<div class="flex items-center gap-3">
+        <a href="{{ route('notices.index') }}" class="text-cyan-400 text-xl">←</a>
+        <h2 class="text-2xl font-semibold text-white">Back</h2>
+    </div>
 <div class="flex justify-center py-10">
     {{-- ================= ATTACHMENT MODE ================= --}}
     @if ($notice->mode === 'attachment' && $notice->Atch_Path)
@@ -122,7 +125,7 @@
             onclick="confirmStatusChange({{ $notice->Ntic_Crcl_UIN }}, 'draft')"
             class="bg-yellow-500 hover:bg-yellow-600 text-black
                    px-5 py-2 rounded font-semibold shadow">
-            Move to Draft
+           Unpublish
         </button>
     @endif
      @if ($notice->Stau === 'draft')

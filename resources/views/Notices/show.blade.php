@@ -3,6 +3,10 @@
 @section('title', 'View Notice')
 
 @section('content')
+<div class="flex items-center gap-3">
+        <a href="{{ route('notices.index') }}" class="text-cyan-400 text-xl">←</a>
+        <h2 class="text-2xl font-semibold text-white">Back</h2>
+</div>
 <div class="justify-end mb-6 gap-3 hidden">
     @if ($notice->Stau === 'draft')
         <button
@@ -100,14 +104,14 @@
             </div>
 
             {{-- ================= SIGNATORY (Will be moved to last page) ================= --}}
-            <div id="signatory-section" class="absolute bottom-12 left-12 right-12 hidden">
+            <div id="signatory-section" class="absolute bottom-12 left-12 w-64 hidden">
                 <div class="mt-8 flex">
                     <div>
                         @if ($notice->Imgs_Sgnt)
                             <img
                                 src="{{ asset('storage/'.$notice->Imgs_Sgnt) }}"
                                 alt="Signature"
-                                class="h-25 mb-1 ml-auto object-contain">
+                                class="h-25 mb-1 object-contain">
                         @endif
 
                         <p class="font-semibold">

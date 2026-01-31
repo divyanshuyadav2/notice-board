@@ -15,13 +15,26 @@
 
     {{-- PAGE HEADER --}}
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-            <h2 class="text-2xl font-semibold text-white">Notices/Circular</h2>
-          
+        <div class="flex items-center justify-between w-full lg:w-auto gap-2">
+            <h2 class="text-xl sm:text-2xl font-semibold text-white">Notices/Circular</h2>
+            
+            {{-- SEARCH TOGGLE & ADD BUTTON (Mobile - Same Row as Title) --}}
+            <div class="flex items-center gap-2 lg:hidden">
+                <button class="search-toggle-btn mobile" id="searchToggleMobile" title="Toggle Search">
+                    <i class="bi bi-search"></i>
+                </button>
+                
+                <a href="{{ route('notices.create') }}"
+                   class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700
+                          text-white font-semibold px-3 py-2 rounded transition text-sm">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add</span>
+                </a>
+            </div>
         </div>
 
-        {{-- SEARCH TOGGLE & ADD BUTTON --}}
-        <div class="flex items-center gap-3">
+        {{-- SEARCH TOGGLE & ADD BUTTON (Desktop) --}}
+        <div class="hidden lg:flex items-center gap-3">
             <button class="search-toggle-btn" id="searchToggle" title="Toggle Search">
                 <i class="bi bi-search"></i>
             </button>
@@ -172,6 +185,11 @@
     justify-content: center;
     cursor: pointer;
     transition: all .2s;
+}
+
+.search-toggle-btn.mobile {
+    width: 36px;
+    height: 36px;
 }
 
 .search-toggle-btn:hover {
@@ -344,11 +362,73 @@ table.dataTable tbody td {
 }
 
 /* ---------------------------------------------------------
+   ACTION DROPDOWN MENU - FIXED POSITIONING
+--------------------------------------------------------- */
+.action-menu {
+    position: fixed !important;
+    min-width: 10rem;
+    background-color: #0d2942 !important;
+    border: 1px solid #1a3647;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    z-index: 9999 !important;
+    overflow: hidden;
+}
+
+.action-menu a,
+.action-menu button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #e5f1f8;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.action-menu a:hover,
+.action-menu button:hover {
+    background-color: #1a3647 !important;
+}
+
+.action-btn {
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------
    MOBILE CARD VIEW
 --------------------------------------------------------- */
 @media (max-width: 768px) {
     #searchRow {
         flex-direction: column;
+    }
+
+    /* TOP CONTROLS - Show and Pagination in same row on mobile */
+    #topControlsRow {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 1rem !important;
+    }
+
+    #topControlsRow .length-container {
+        flex-shrink: 0;
+    }
+
+    #topControlsRow .pagination-container {
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .pagination-container {
@@ -460,31 +540,16 @@ table.dataTable tbody td {
         font-size: 0.9rem;
     }
 
-    /* Date - positioned top right */
+    /* Date Section - Now showing where person info was */
     table.dataTable tbody td:nth-child(3) {
-        position: absolute;
-        top: 1.25rem;
-        right: 3.5rem;
-        padding: 0;
-        font-size: 0.7rem;
-        color: #7fa3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        max-width: 80px;
-    }
-
-    table.dataTable tbody td:nth-child(3) .text-sm {
-        font-size: 0.7rem;
-    }
-
-    /* Personal Info Section */
-    table.dataTable tbody td:nth-child(4) {
+        position: static;
         padding-top: 0.75rem;
         padding-bottom: 0.5rem;
+        max-width: 100%;
     }
 
-    table.dataTable tbody td:nth-child(4)::before {
-        content: 'PERSONAL INFO';
+    table.dataTable tbody td:nth-child(3)::before {
+        content: 'EFFECTIVE/PUBLISHED DATE';
         display: block;
         font-size: 0.65rem;
         color: #4fd1e8;
@@ -492,6 +557,16 @@ table.dataTable tbody td {
         letter-spacing: 0.05em;
         margin-bottom: 0.5rem;
         text-transform: uppercase;
+    }
+
+    table.dataTable tbody td:nth-child(3) .text-sm {
+        font-size: 0.9rem;
+        color: #e5f1f8;
+    }
+
+    /* Personal Info - HIDDEN on mobile */
+    table.dataTable tbody td:nth-child(4) {
+        display: none !important;
     }
 
     /* Action buttons - positioned top right */
@@ -503,21 +578,30 @@ table.dataTable tbody td {
     }
 }
 
-@media (max-width: 480px) {
-    #topControlsRow, #bottomRow {
-        flex-direction: column;
-        align-items: flex-start;
+@media (max-width: 768px) {
+    /* BOTTOM ROW - Info and Pagination in same row on mobile */
+    #bottomRow {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 1rem !important;
+        flex-wrap: wrap;
     }
 
+    #bottomRow .info-container {
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    #bottomRow .pagination-container {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
     table.dataTable tbody tr {
         padding: 1rem;
-    }
-
-    /* Adjust date position on smaller screens */
-    table.dataTable tbody td:nth-child(3) {
-        right: 2.5rem;
-        font-size: 0.65rem;
-        max-width: 70px;
     }
 
     /* Ensure avatar stays exactly 40x40 on small screens */
@@ -530,6 +614,17 @@ table.dataTable tbody td {
         max-width: 36px !important;
         max-height: 36px !important;
         font-size: 0.85rem !important;
+    }
+
+    /* Make pagination buttons slightly smaller on very small screens */
+    #bottomRow .paginate_button {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    #bottomRow .info-container {
+        font-size: 0.7rem;
     }
 }
 
@@ -574,24 +669,28 @@ $(document).ready(function () {
 
         columns: [
             {
-                data: 'title',                 
-                name: 'Subj',                  
+                data: 'title',
+                name: 'title',
                 orderable: false,
-                searchable: true
+                searchable: false  // Disable column-specific search
             },
             {
                 data: 'Orga_Name',
                 name: 'Orga_Name',
                 orderable: false,
-                searchable: true
+                searchable: false  // Disable column-specific search
             },
             {
                 data: 'date',
-                name: 'Ntic_Crcl_Dt'
+                name: 'date',
+                orderable: true,
+                searchable: false  // Disable column-specific search
             },
             {
-                data: 'Athr_Pers_Name',             
-                searchable: true
+                data: 'Athr_Pers_Name',
+                name: 'Athr_Pers_Name',
+                orderable: false,
+                searchable: false  // Disable column-specific search
             },
             {
                 data: 'action',
@@ -609,7 +708,7 @@ $(document).ready(function () {
 
         language: {
             search: "",
-            searchPlaceholder: "Search Notices/circulars...",
+            searchPlaceholder: "Search notices/circulars...",
             lengthMenu: "Show _MENU_",
             info: "Showing _START_ to _END_ of _TOTAL_ entries",
             paginate: {
@@ -661,16 +760,16 @@ $(document).ready(function () {
             
             $('#bottomRow').html(infoHtml + paginationHtmlBottom);
 
-            // Bind search toggle
-            $('#searchToggle').on('click', function() {
-                $(this).toggleClass('active');
+            // Bind search toggle - Handle both mobile and desktop buttons
+            $('.search-toggle-btn').on('click', function() {
+                $('.search-toggle-btn').toggleClass('active');
                 $('#searchRow').toggleClass('hidden show');
                 if ($('#searchRow').hasClass('show')) {
                     $('#customSearch').focus();
                 }
             });
 
-            // Bind custom search
+            // Bind custom search - OPTIMIZED
             $('#customSearch').on('keyup', function() {
                 table.search(this.value).draw();
             });
@@ -754,7 +853,10 @@ $(document).ready(function () {
     }, 2000);
 });
 
+// IMPROVED DROPDOWN POSITIONING - FIXED TO PREVENT SCROLL ISSUES
 document.addEventListener('click', function (e) {
+    const activeMenu = document.querySelector('.action-menu:not(.hidden)');
+    
     // Close all dropdowns first
     document.querySelectorAll('.action-menu').forEach(menu => {
         menu.classList.add('hidden');
@@ -764,13 +866,56 @@ document.addEventListener('click', function (e) {
     const btn = e.target.closest('.action-btn');
     if (btn) {
         e.preventDefault();
+        e.stopPropagation();
 
         const wrapper = btn.closest('div');
         const menu = wrapper.querySelector('.action-menu');
 
-        menu.classList.toggle('hidden');
+        if (menu) {
+            // Toggle visibility
+            menu.classList.toggle('hidden');
+
+            if (!menu.classList.contains('hidden')) {
+                // Get button position
+                const btnRect = btn.getBoundingClientRect();
+                
+                // Position the menu
+                const menuHeight = menu.offsetHeight;
+                const windowHeight = window.innerHeight;
+                const spaceBelow = windowHeight - btnRect.bottom;
+                const spaceAbove = btnRect.top;
+
+                // Decide if menu should open above or below
+                if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+                    // Open above
+                    menu.style.top = (btnRect.top - menuHeight - 5) + 'px';
+                } else {
+                    // Open below (default)
+                    menu.style.top = (btnRect.bottom + 5) + 'px';
+                }
+
+                // Horizontal positioning - align to right edge of button
+                menu.style.left = (btnRect.right - menu.offsetWidth) + 'px';
+            }
+        }
     }
 });
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.action-btn') && !e.target.closest('.action-menu')) {
+        document.querySelectorAll('.action-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+});
+
+// Close dropdown on scroll
+window.addEventListener('scroll', function() {
+    document.querySelectorAll('.action-menu').forEach(menu => {
+        menu.classList.add('hidden');
+    });
+}, true);
 
 $(document).on('click', '#noticesTable tbody tr', function (e) {
     // prevent click when clicking action menu or button
