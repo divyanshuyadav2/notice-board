@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function syncDocumentType() {
             const action = actionTypeSelect.value;
-
+            const orgInput = document.querySelector('input[name="organization_name"]');
             if (
                 action === 'notice_issued' ||
                 action === 'notice_received'
@@ -343,6 +343,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 action === 'circular_received'
             ) {
                 documentTypeInput.value = 'circular';
+            }
+            if (
+                action === 'notice_received' ||
+                action === 'circular_received'
+            ) {
+                orgInput.value = '';
             }
     }
 

@@ -290,7 +290,7 @@ class NoticeController extends Controller
                 $notice = AdmnTranNticCrcl::create([
 
                     /* CORE */
-                    'Orga_Name'        => $validated['organization_name'] ?? null,
+                    'Orga_Name'        => $validated['organization_name'] ?? session('org_name'),
                     'Ntic_Crcl_Dt'     => $validated['notice_date'],
                     'Subj'             => $validated['subject'],
                     'Ref_No'           => $validated['ref_no'] ?? null,
