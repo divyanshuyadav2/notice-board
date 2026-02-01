@@ -37,7 +37,8 @@ class NoticeController extends Controller
             'Dept',
             'Athr_Pers_Name',
             'Pbli_On',
-            'Ref_No'
+            'Ref_No',
+            'MoOn'
         ])->where('Orga_UIN', session('organization_uin'));
 
         return DataTables::of($query)
@@ -198,7 +199,7 @@ class NoticeController extends Controller
 
             /* ================= ORDER ================= */
             ->order(function ($query) {
-                $query->orderBy('Eft_Dt', 'desc');
+                $query->orderBy('MoOn', 'desc');
             })
 
             ->rawColumns(['title', 'Athr_Pers_Name', 'Orga_Name', 'date', 'action'])
