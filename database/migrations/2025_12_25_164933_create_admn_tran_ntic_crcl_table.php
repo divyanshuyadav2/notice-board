@@ -58,7 +58,7 @@ return new class extends Migration
             'circular_received'
             ]);
             $table->unsignedInteger('Orga_UIN');
-
+            $table->string('Regi_Addr');
   
             });
             

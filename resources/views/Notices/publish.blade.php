@@ -8,12 +8,13 @@
         <a href="{{ route('notices.index') }}" class="text-cyan-400 text-xl">←</a>
         <h2 class="text-2xl font-semibold text-white">Back</h2>
     </div>
+
 <div class="flex justify-center py-10">
     {{-- ================= ATTACHMENT MODE ================= --}}
     @if ($notice->mode === 'attachment' && $notice->Atch_Path)
-        <iframe
-            src="{{ asset('storage/'.$notice->Atch_Path) }}"
-            class="w-[210mm] h-[297mm] border shadow bg-white">
+        <iframe 
+            src="{{ asset(''.$notice->Atch_Path) }}" 
+            class="w-full h-[297mm] border shadow bg-white">
         </iframe>
 
     {{-- ================= DRAFT MODE ================= --}}
@@ -30,7 +31,7 @@
                         </h1>
 
                         <p class="text-sm mt-1">
-                            {{ $notice->Dept ?? '—' }}
+                            {{ $notice->Regi_Addr}}
                         </p>
                     </div>
                 </div>
@@ -86,9 +87,11 @@
                         <div>
                             @if ($notice->Imgs_Sgnt)
                                 <img
-                                    src="{{ asset('storage/'.$notice->Imgs_Sgnt) }}"
+                                    src="{{ asset(''.$notice->Imgs_Sgnt) }}"
                                     alt="Signature"
                                     class="h-25 mb-1 ml-auto object-contain">
+                            @else
+                                <p class="mb-1">Sd/-</p>
                             @endif
 
                             <p class="font-semibold">
@@ -104,9 +107,10 @@
                     </div>
 
                     {{-- ================= FOOTER ================= --}}
-                    <div class="mt-12 pt-4 text-center text-xs">
-                        <hr class="border-black mb-6">
+                    <div class="footer">
+                        <div class="footer-line"></div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -125,7 +129,7 @@
             onclick="confirmStatusChange({{ $notice->Ntic_Crcl_UIN }}, 'draft')"
             class="bg-yellow-500 hover:bg-yellow-600 text-black
                    px-5 py-2 rounded font-semibold shadow">
-           Unpublish
+            Unpublish
         </button>
     @endif
      @if ($notice->Stau === 'draft')
@@ -136,6 +140,7 @@
     </a>
     @endif
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
@@ -159,6 +164,7 @@
 .notice-page {
     box-sizing: border-box;
 }
+
 </style>
 
 <script>
@@ -242,14 +248,16 @@ function createNewPage() {
                         <img src="{{ asset('storage/'.$notice->Imgs_Sgnt) }}" 
                              alt="Signature"
                              class="h-25 mb-1 ml-auto object-contain">
+                    @else
+                        <p class="mb-1">Sd/-</p>
                     @endif
                     <p class="font-semibold">{{ $notice->Athr_Pers_Name }}</p>
                     <p class="text-sm">{{ $notice->Dsig }}</p>
                     <p class="text-sm">{{ $notice->Dept }}</p>
                 </div>
             </div>
-            <div class="mt-12 pt-4 text-center text-xs">
-                <hr class="border-black mb-6">
+            <div class="footer">
+                <div class="footer-line"></div>
             </div>
         </div>
     `;

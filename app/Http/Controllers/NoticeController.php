@@ -344,6 +344,7 @@ class NoticeController extends Controller
                                             ? now()
                                             : null,
                     'Orga_UIN'=>$request['Orga_UIN'],
+                    'Regi_Addr'=>session('Regi_Addr'),
                     
                 ]);
                

@@ -46,6 +46,7 @@ class ResolveUserFromToken
         session([
             'token' => $token,
             'User_UIN'  => $data['data'][0]['User_UIN'],
+            'Regi_Addr'=>$data['data'][0]['Regi_Addr'],
             'user_data' => $data['data'][0],
         ]);
 

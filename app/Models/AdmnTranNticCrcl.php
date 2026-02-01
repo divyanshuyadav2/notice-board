@@ -40,7 +40,8 @@ class AdmnTranNticCrcl extends Model
         'Pbli_On',
         'Ref_No',
         'Action_Type',
-         'Orga_UIN',
+        'Orga_UIN',
+        'Regi_Addr'
 
     ];
  
